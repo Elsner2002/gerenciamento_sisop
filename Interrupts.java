@@ -1,0 +1,7 @@
+public enum Interrupts {
+	INVALID_ADDRESS,
+	INVALID_INSTRUCTION,
+	OVERFLOW,
+	STOP
+}
+

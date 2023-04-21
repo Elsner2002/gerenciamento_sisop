@@ -1,8 +1,15 @@
-public record CpuState() {
-	int pc;
-	Word ir;
-	int[] registers;
-	Interrupt irpt;
-	Memory memory;
-	boolean debugMode;
+public class CpuState {
+	private int pc;
+	private Word ir;
+	private int[] registers;
+	private Interrupt irpt;
+	private Memory memory;
+	private boolean debugMode;
+
+	public Interrupt getIrpt() {
+		return irpt;
+	}
+	public void setIrpt(Interrupt irpt) {
+		this.irpt = irpt;
+	}
 }

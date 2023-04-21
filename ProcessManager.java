@@ -5,7 +5,7 @@ public class ProcessManager {
 
 	public void newProcess(Process process) {
 		int totalFramesNeeded = (
-			process.words().length / Memory.FRAME_SIZE
+			process.getWords().length / Memory.FRAME_SIZE
 		) + 1;
 
 		int framesNeeded = totalFramesNeeded;
@@ -23,7 +23,7 @@ public class ProcessManager {
 			}
 		}
 
-		Pcb pcb = Pcb(nextId, false, false, null, pages);
+		Pcb pcb = new Pcb(nextId, pages);
 		nextId += 1;
 		process.setPcb(pcb);
 		allocateProcess(process);

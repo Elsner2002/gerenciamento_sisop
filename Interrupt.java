@@ -1,4 +1,4 @@
-public enum Interrupts {
+public enum Interrupt {
 	INVALID_ADDRESS,
 	INVALID_INSTRUCTION,
 	OVERFLOW,

@@ -22,7 +22,7 @@ public class MemoryManager {
 				slice, 0, Memory.FRAME_SIZE
 			);
 
-			this.memory.setFrame(frames[i], slice);
+			this.memory.setFrame(frames[words.length - remaining], slice);
 		}
 
 		return true;

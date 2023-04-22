@@ -1,17 +1,25 @@
 public class Pcb {
 	private int id;
+	private int pc;
 	private boolean running;
 	private boolean ready;
 	private CpuState cpuState;
-	private int[] pages;
+	private int[] frames;
 
-	public Pcb(int id, int[] pages) {
+	public Pcb(int id, int[] frames) {
 		this.id = id;
-		this.pages = pages;
+		this.frames = frames;
 	}
 
-	public int[] getPages() {
-		return pages;
+	public int getId() {
+		return this.id;
+	}
+
+	public int getPc() {
+		return this.pc;
+	}
+
+	public int[] getFrames() {
+		return this.frames;
 	}
 }
-

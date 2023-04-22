@@ -1,9 +1,11 @@
+import Word;
+
 public class Process {
 	private Pcb pcb;
 	private Word[] words;
 
-	public Process(Word[] words) {
-		this.pcb = null;
+	public Process(Pcb pcb, Word[] words) {
+		this.pcb = pcb;
 		this.words = words;
 	}
 

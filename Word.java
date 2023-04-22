@@ -1,5 +1,3 @@
-import Opcode;
-
 public record Word(
 	Opcode opcode,
 	int r1,

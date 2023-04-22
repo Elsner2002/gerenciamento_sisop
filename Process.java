@@ -1,5 +1,3 @@
-import Word;
-
 public class Process {
 	private Pcb pcb;
 	private Word[] words;

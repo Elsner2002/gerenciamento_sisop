@@ -1,8 +1,6 @@
 import java.util.Map;
 import java.util.HashMap;
 
-import Word;
-
 public class ProcessManager {
 	private int nextId = 0;
 	private MemoryManager memoryManager;

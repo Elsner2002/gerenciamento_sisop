@@ -1,5 +1,3 @@
-import Word;
-
 public class Memory {
 	public static final int MEMORY_SIZE = 1024;
 	public static final int FRAME_SIZE = 8;

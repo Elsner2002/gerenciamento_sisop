@@ -12,45 +12,40 @@ public class Cpu {
 		return false;
 	}
 
-	private boolean legal(int e) {                             // todo acesso a memoria tem que ser verificado
+	private boolean legal(int e) {
 		if(e<0 || e>memory.MEMORY_SIZE){
 			return false;
 		}
 		return true;
 	}
 
-	public void run() { 		// execucao da CPU supoe que o contexto da CPU, vide acima, esta devidamente setado			
-		while (true) { 			// ciclo de instrucoes. acaba cfe instrucao, veja cada caso.
-		   // --------------------------------------------------------------------------------------------------
-		   // FETCH
-			if (legal(pc)) { 	// pc valido
-				ir = memory.get(pc); 	// <<<<<<<<<<<<           busca posicao da memoria apontada por pc, guarda em ir
+	public void run() {
+		while (true) {
+			if (legal(pc)) {
+				ir = memory.get(pc);
 				if (debugMode) { System.out.print("                               pc: "+pc+"       exec: ");  mem.dump(ir); }
-		   // --------------------------------------------------------------------------------------------------
-		   // EXECUTA INSTRUCAO NO ir
-				switch (ir.opcode) {   // conforme o opcode (código de operação) executa
+				switch (ir.opcode) {
 
-				// Instrucoes de Busca e Armazenamento em Memoria
 					case LDI: // Rd ← k
 						registers[ir.r1] = ir.param;
 						pc++;
 						break;
 
-					case LDD: // Rd <- [A]
+					case LDD:
 						if (legal(ir.param)) {
 						   registers[ir.r1] = memory.get(ir.param).param;
 						   pc++;
 						}
 						break;
 
-					case LDX: // RD <- [RS] // NOVA
+					case LDX:
 						if (legal(registers[ir.r2])) {
 							registers[ir.r1] = memory.get(registers[ir.r2]).param;
 							pc++;
 						}
 						break;
 
-					case STD: // [A] ← Rs
+					case STD:
 						if (legal(ir.param)) {
 							memory.get(ir.param).opc = Opcode.DATA;
 							memory.get(ir.param).param = registers[ir.r1];
@@ -58,60 +53,58 @@ public class Cpu {
 						};
 						break;
 
-					case STX: // [Rd] ←Rs
+					case STX:
 						if (legal(registers[ir.r1])) {
-							memory.get(registers[ir.r1]).opc = Opcode.DATA;      
-							memory.get(registers[ir.r1]).param = registers[ir.r2];          
+							memory.get(registers[ir.r1]).opc = Opcode.DATA;
+							memory.get(registers[ir.r1]).param = registers[ir.r2];
 							pc++;
 						};
 						break;
-					
-					case MOVE: // RD <- RS
+
+					case MOVE:
 						registers[ir.r1] = registers[ir.r2];
 						pc++;
-						break;	
-						
-				// Instrucoes Aritmeticas
-					case ADD: // Rd ← Rd + Rs
+						break;
+
+					case ADD:
 						registers[ir.r1] = registers[ir.r1] + registers[ir.r2];
 						testOverflow(registers[ir.r1]);
 						pc++;
 						break;
 
-					case ADDI: // Rd ← Rd + k
+					case ADDI:
 						registers[ir.r1] = registers[ir.r1] + ir.param;
 						testOverflow(registers[ir.r1]);
 						pc++;
 						break;
 
-					case SUB: // Rd ← Rd - Rs
+					case SUB:
 						registers[ir.r1] = registers[ir.r1] - registers[ir.r2];
 						testOverflow(registers[ir.r1]);
 						pc++;
 						break;
 
-					case SUBI: // RD <- RD - k // NOVA
+					case SUBI:
 						registers[ir.r1] = registers[ir.r1] - ir.param;
 						testOverflow(registers[ir.r1]);
 						pc++;
 						break;
 
-					case MULT: // Rd <- Rd * Rs
-						registers[ir.r1] = registers[ir.r1] * registers[ir.r2];  
+					case MULT:
+						registers[ir.r1] = registers[ir.r1] * registers[ir.r2];
 						testOverflow(registers[ir.r1]);
 						pc++;
 						break;
 
-				// Instrucoes JUMP
-					case JMP: // PC <- k
+					case JMP:
 						pc = ir.param;
 						break;
-					
+
 					case JUPI:
 						pc = ir.r1;
 						break;
-					
-					case JMPIG: // If Rc > 0 Then PC ← Rs Else PC ← PC +1
+
+					case JMPIG:
 						if (registers[ir.r2] > 0) {
 							pc = registers[ir.r1];
 						} else {
@@ -119,7 +112,7 @@ public class Cpu {
 						}
 						break;
 
-					case JMPIGK: // If RC > 0 then PC <- k else PC++
+					case JMPIGK:
 						if (registers[ir.r2] > 0) {
 							pc = ir.param;
 						} else {
@@ -127,7 +120,7 @@ public class Cpu {
 						}
 						break;
 
-					case JMPILK: // If RC < 0 then PC <- k else PC++
+					case JMPILK:
 						 if (registers[ir.r2] < 0) {
 							pc = ir.param;
 						} else {
@@ -135,7 +128,7 @@ public class Cpu {
 						}
 						break;
 
-					case JMPIEK: // If RC = 0 then PC <- k else PC++
+					case JMPIEK:
 							if (registers[ir.r2] == 0) {
 								pc = ir.param;
 							} else {
@@ -144,60 +137,59 @@ public class Cpu {
 						break;
 
 
-					case JMPIL: // if Rc < 0 then PC <- Rs Else PC <- PC +1
+					case JMPIL:
 							 if (registers[ir.r2] < 0) {
 								pc = registers[ir.r1];
 							} else {
 								pc++;
 							}
 						break;
-	
-					case JMPIE: // If Rc = 0 Then PC <- Rs Else PC <- PC +1
+
+					case JMPIE:
 							 if (registers[ir.r2] == 0) {
 								pc = registers[ir.r1];
 							} else {
 								pc++;
 							}
-						break; 
+						break;
 
-					case JMPIM: // PC <- [A]
+					case JMPIM:
 							 pc = memory.get(ir.param].param;
-						 break; 
+						 break;
 
-					case JMPIGM: // If RC > 0 then PC <- [A] else PC++
+					case JMPIGM:
 							 if (registers[ir.r2] > 0) {
 								pc = memory.get(ir.param].param;
 							} else {
 								pc++;
 							}
-						 break;  
+						 break;
 
-					case JMPILM: // If RC < 0 then PC <- k else PC++
+					case JMPILM:
 							 if (registers[ir.r2] < 0) {
 								pc = memory.get(ir.param].param;
 							} else {
 								pc++;
 							}
-						 break; 
+						 break;
 
-					case JMPIEM: // If RC = 0 then PC <- k else PC++
+					case JMPIEM:
 							if (registers[ir.r2] == 0) {
 								pc = memory.get(ir.param].param;
 							} else {
 								pc++;
 							}
-						 break; 
+						 break;
 
-					case JMPIGT: // If RS>RC then PC <- k else PC++
+					case JMPIGT:
 							if (registers[ir.r1] > registers[ir.r2]) {
 								pc = ir.param;
 							} else {
 								pc++;
 							}
-						 break; 
+						 break;
 
-				// outras
-					case STOP: // por enquanto, para execucao
+					case STOP:
 						irpt = Interrupts.STOP;
 						break;
 
@@ -205,25 +197,22 @@ public class Cpu {
 						irpt = Interrupts.INVALID_INSTRUCTION;
 						break;
 
-				// Chamada de sistema
 					case TRAP:
-						 sysCall.handle();            // <<<<< aqui desvia para rotina de chamada de sistema, no momento so temos IO
+						 sysCall.handle();
 						 pc++;
 						 break;
 
-				// Inexistente
 					default:
 						irpt = Interrupts.INVALID_INSTRUCTION;
 						break;
 				}
 			}
-		   // --------------------------------------------------------------------------------------------------
-		   // VERIFICA INTERRUPÇÃO !!! - TERCEIRA FASE DO CICLO DE INSTRUÇÕES
-			if (!(irpt == Interrupts.noInterrupt)) {   // existe interrupção
-				ih.handle(irpt,pc);                       // desvia para rotina de tratamento
-				break; // break sai do loop da cpu
+
+			if (!(irpt == Interrupts.noInterrupt)) {
+				ih.handle(irpt,pc);
+				break;
 			}
-		}  // FIM DO CICLO DE UMA INSTRUÇÃO
+		}
 	}
 }
 

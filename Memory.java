@@ -8,10 +8,13 @@ public class Memory {
 		this.memory = new Word[Memory.FRAME_AMOUNT][Memory.FRAME_SIZE];
 	}
 
-	public int getPosition(Process p) {
-		int page = p.getPcb().getPc() / FRAME_SIZE;
-		int offset = p.getPcb().getPc() % FRAME_SIZE;
-		return p.getPage(pc) * FRAME_SIZE + offset;
+	public int getPosition(int[] pages, int virtual_addr) {
+		int page = virtual_addr / Memory.FRAME_SIZE;
+		int page_start = page * Memory.FRAME_SIZE;
+		int frame = pages[page];
+		int frame_start = (frame - 1) * Memory.FRAME_SIZE;
+		int offset = virtual_addr - page_start;
+		return frame_start + offset;
 	}
 
 	public Word[][] getMemory() {

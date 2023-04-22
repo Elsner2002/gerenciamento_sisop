@@ -1,42 +1,42 @@
+import java.util.Map;
+import java.util.HashMap;
+
+import Word;
+
 public class ProcessManager {
 	private int nextId = 0;
-	private Memory memory;
-	private boolean[] occupiedFrames;
+	private MemoryManager memoryManager;
+	private Map<Integer, Process> processes;
 
-	public void newProcess(Process process) {
-		int totalFramesNeeded = (
-			process.getWords().length / Memory.FRAME_SIZE
-		) + 1;
-
-		int framesNeeded = totalFramesNeeded;
-		int[] pages = new int[framesNeeded];
-
-		for (int i = 0; i < Memory.FRAME_AMOUNT; i++) {
-			if (!occupiedFrames[i]) {
-				pages[totalFramesNeeded - framesNeeded] = i;
-				framesNeeded -= 1;
-				occupiedFrames[i] = true;
-			}
-
-			if (framesNeeded == 0) {
-				break;
-			}
-		}
-
-		Pcb pcb = new Pcb(nextId, pages);
-		nextId += 1;
-		process.setPcb(pcb);
-		allocateProcess(process);
+	public ProcessManager(MemoryManager memoryManager) {
+		this.memoryManager = memoryManager;
+		this.processes = new HashMap<>();
 	}
 
-	private void allocateProcess(Process process) {
-		int[] pages = process.getPcb().getPages();
-		Word[] words = process.getWords();
+	public int createProcess(Word[] words) {
+		int framesNeeded = (words.length / Memory.FRAME_SIZE) + 1;
+		int[] frames = this.memoryManager.allocate(framesNeeded);
 
-		for (int i = 0; i < pages.length; i++) {
-			Word[] frame = memory.getFrame(pages[i]);
-			System.arraycopy(words, wordsPos, frame, 0, length);
+		if (frames == null) {
+			return -1;
 		}
+
+		Pcb pcb = new Pcb(this.nextId, frames);
+		this.nextId += 1;
+		boolean filled = this.memoryManager.fillFrames(frames, words);
+
+		if (!filled) {
+			return -1;
+		}
+
+		Process process = new Process(pcb, words);
+		this.processes.put(pcb.getId(), process);
+		return process.getPcb().getId();
+	}
+
+	public void killProcess(int pid) {
+		Process process = this.processes.get(pid);
+		this.memoryManager.desallocate(process.getPcb().getFrames());
+		this.processes.remove(pid);
 	}
 }
-

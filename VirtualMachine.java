@@ -4,45 +4,44 @@ public class VirtualMachine {
 	private static Cpu cpu;
 
 	public static void main(String[] args) {
+		run();
+	}
+
+	private static void run() {
 		Scanner in = new Scanner(system.in);
-		boolean execVM = true;
-		do{
-			String entrada = in.next();
-			String[] vetEntr = entrada.split(" ");
-			switch(vetEntr[0]){
-				case "cria":
+
+		while (true) {
+			String[] input = in.nextLine().split(" ");
+
+			switch(input[0]) {
+				case "new":
 					break;
 
-				case "dump":
+				case "kill":
 					break;
 
-				case "listaProcessos":
+				case "ps":
 					break;
 
-				case "desaloca":
+				case "pdump":
 					break;
 
-				case "dumpM":
+				case "mpdump":
 					break;
 
-				case "executa":
+				case "run":
 					break;
 
-				case "traceOn":
+				case "trace":
 					break;
 
-				case "traceOff":
-					break;
-					
 				case "exit":
-					execVM = false;
-					break;
+					return;
 
 				default:
 					break;
 			}
-
-		} while(execVM)
+		}
 	}
 }
 

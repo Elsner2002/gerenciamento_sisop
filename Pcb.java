@@ -35,6 +35,14 @@ public class Pcb {
 		}
 	}
 
+	public boolean isReady() {
+		return ready;
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
 	public void changeRunning(){
 		running = !running;
 	}

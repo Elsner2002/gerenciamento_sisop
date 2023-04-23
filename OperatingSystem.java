@@ -1,7 +1,4 @@
 import java.util.Scanner;
-
-import javax.xml.stream.events.ProcessingInstruction;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
@@ -10,7 +7,7 @@ import java.util.Map;
 public class OperatingSystem {
 	private static Cpu cpu;
 	private static ProcessManager pm;
-	private static MemoryManager mm;
+	//private static MemoryManager mm;
 	private static List<Integer> idProcess = new ArrayList<Integer>();
 	private static Map<String, Word[]> programs= new HashMap<>();
 	private static Programs programList;
@@ -70,12 +67,15 @@ public class OperatingSystem {
 					break;
 
 				case "executa":
+					cpu.run();
 					break;
 
 				case "traceOn":
+					cpu.traceOn();
 					break;
 
 				case "traceOff":
+					cpu.traceOff();
 					break;
 					
 				case "exit":
@@ -87,6 +87,8 @@ public class OperatingSystem {
 			}
 
 		} while(execVM);
+	
+		in.close();
 	}
 }
 

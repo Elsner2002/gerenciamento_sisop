@@ -31,6 +31,10 @@ public class VirtualMachine {
 				case "exit":
 					return;
 				default:
+					System.out.println(
+						"system: command not found: " + input[0]
+					);
+
 					break;
 			}
 		}

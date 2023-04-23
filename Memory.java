@@ -15,6 +15,23 @@ public class Memory {
 		return this.memory[frame][offset];
 	}
 
+	public void set(int addr, Word value) {
+		int frame = addr / Memory.FRAME_SIZE;
+		int frame_start = frame * Memory.FRAME_SIZE;
+		int offset = addr - frame_start;
+		this.memory[frame][offset] = value;
+	}
+
+	public void set(int addr, int param) {
+		Word oldValue = this.get(addr);
+
+		Word newValue = new Word(
+			Opcode.DATA, oldValue.r1(), oldValue.r2(), param
+		);
+
+		this.set(addr, newValue);
+	}
+
 	public Word[][] getMemory() {
 		return this.memory;
 	}

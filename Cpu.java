@@ -166,14 +166,20 @@ public class Cpu {
 				}
 
 				break;
-			// TODO.
 			case STD:
+				if (isLegalAddress(ir.param())) {
+					this.memory.set(translateToPhysical(ir.param()), r1);
+				}
+
 				break;
 			case STOP:
 				this.state.setIrpt(Interrupt.STOP);
 				break;
-			// TODO.
 			case STX:
+				if (isLegalAddress(r1)) {
+					this.memory.set(translateToPhysical(r1, r2));
+				}
+
 				break;
 			case SUB:
 				int sub = r1 - r2;

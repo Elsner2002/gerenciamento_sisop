@@ -4,4 +4,8 @@ public record Word(
 	int r2,
 	int param
 ) {
+	@Override
+	public String toString() {
+		return this.opcode() + " " + this.r1() + " " + this.r2() + " " + this.param();
+	}
 }

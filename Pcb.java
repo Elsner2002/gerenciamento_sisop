@@ -35,6 +35,14 @@ public class Pcb {
 		}
 	}
 
+	public void changeRunning(){
+		running = !running;
+	}
+
+	public void changeReady(){
+		ready = !ready;
+	}
+
 	public String toString(){
 		String content = "ID: "+ id + "\nPC: " + pc+ "\nState: " + getState()+ "\nFrames: ";
 		for(int frame: frames){

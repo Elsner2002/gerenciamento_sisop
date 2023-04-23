@@ -39,6 +39,19 @@ public class ProcessManager {
 	public void killProcess(int pid) {
 		Process process = this.processes.get(pid);
 		this.memoryManager.desallocate(process.getPcb().getFrames());
+		process.getPcb().changeRunning();
 		this.processes.remove(pid);
+	}
+
+	public void killProcess() {
+		for (int p: processes.keySet()){
+			if(processes.get(p).getPcb().isRunning()){
+				Process process = this.processes.get(p);
+				this.memoryManager.desallocate(process.getPcb().getFrames());
+				process.getPcb().changeRunning();
+				this.processes.remove(p);
+				break;
+			}
+		}
 	}
 }

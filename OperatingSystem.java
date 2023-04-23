@@ -67,7 +67,7 @@ public class OperatingSystem {
 					break;
 
 				case "executa":
-					cpu.run();
+					cpu.run(pm.getProcess(Integer.parseInt(vetEntr[1])));
 					break;
 
 				case "traceOn":

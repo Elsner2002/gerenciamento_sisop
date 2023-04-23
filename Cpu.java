@@ -3,6 +3,7 @@ public class Cpu {
 	public static final int MAX_INT = 32767;
 	private CpuState state;
 	private boolean trace = false;
+	private Process processRunning;
 
 	private boolean testForOverflow(int v) {
 		if (v < Cpu.MIN_INT || v > Cpu.MAX_INT) {
@@ -28,7 +29,10 @@ public class Cpu {
 		trace = false;
 	}
 
-	public void run() { 		// execucao da CPU supoe que o contexto da CPU, vide acima, esta devidamente setado			
+	public void run(Process p) { 		// execucao da CPU supoe que o contexto da CPU, vide acima, esta devidamente setado			
+		processRunning = p;
+		processRunning.getPcb().changeReady();
+		processRunning.getPcb().changeRunning();
 		while (state.isRunning()) { 			// ciclo de instrucoes. acaba cfe instrucao, veja cada caso.
 		   // --------------------------------------------------------------------------------------------------
 		   // FETCH

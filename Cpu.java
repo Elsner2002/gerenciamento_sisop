@@ -180,7 +180,7 @@ public class Cpu {
 		}
 	}
 
-	public int translateToPhysical(int[] pages, int virtual_addr) {
+	private int translateToPhysical(int[] pages, int virtual_addr) {
 		int page = virtual_addr / Memory.FRAME_SIZE;
 		int page_start = page * Memory.FRAME_SIZE;
 		int frame = pages[page];

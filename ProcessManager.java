@@ -6,6 +6,10 @@ public class ProcessManager {
 	private MemoryManager memoryManager;
 	private Map<Integer, Process> processes;
 
+	public Process getProcess(int id){
+		return processes.get(id);
+	}
+
 	public ProcessManager(MemoryManager memoryManager) {
 		this.memoryManager = memoryManager;
 		this.processes = new HashMap<>();

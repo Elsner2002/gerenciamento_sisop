@@ -8,7 +8,7 @@ public class VirtualMachine {
 	}
 
 	private static void run() {
-		Scanner in = new Scanner(system.in);
+		Scanner in = new Scanner(System.in);
 
 		while (true) {
 			String[] input = in.nextLine().split(" ");
@@ -16,28 +16,20 @@ public class VirtualMachine {
 			switch(input[0]) {
 				case "new":
 					break;
-
 				case "kill":
 					break;
-
 				case "ps":
 					break;
-
 				case "pdump":
 					break;
-
 				case "mpdump":
 					break;
-
 				case "run":
 					break;
-
 				case "trace":
 					break;
-
 				case "exit":
 					return;
-
 				default:
 					break;
 			}

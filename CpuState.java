@@ -8,6 +8,10 @@ public class CpuState {
 	private int[] pages;
 	private boolean debugMode;
 
+	public CpuState() {
+		this.registers = new int[Cpu.NUM_GENERAL_PURPOSE_REGS];
+	}
+
 	public int getPc() {
 		return pc;
 	}

@@ -1,4 +1,5 @@
 public class Cpu {
+	public static final int NUM_GENERAL_PURPOSE_REGS = 8;
 	public static final int MIN_INT = -32767;
 	public static final int MAX_INT = 32767;
 	private CpuState state;

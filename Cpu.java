@@ -180,6 +180,15 @@ public class Cpu {
 		}
 	}
 
+	public int translateToPhysical(int[] pages, int virtual_addr) {
+		int page = virtual_addr / Memory.FRAME_SIZE;
+		int page_start = page * Memory.FRAME_SIZE;
+		int frame = pages[page];
+		int frame_start = frame * Memory.FRAME_SIZE;
+		int offset = virtual_addr - page_start;
+		return frame_start + offset;
+	}
+
 	private boolean isOverflow(int v) {
 		if (v < Cpu.MIN_INT || v > Cpu.MAX_INT) {
 			this.state.setIrpt(Interrupt.OVERFLOW);

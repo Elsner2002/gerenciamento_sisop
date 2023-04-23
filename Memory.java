@@ -8,13 +8,11 @@ public class Memory {
 		this.memory = new Word[Memory.FRAME_AMOUNT][Memory.FRAME_SIZE];
 	}
 
-	public int getPosition(int[] pages, int virtual_addr) {
-		int page = virtual_addr / Memory.FRAME_SIZE;
-		int page_start = page * Memory.FRAME_SIZE;
-		int frame = pages[page];
-		int frame_start = (frame - 1) * Memory.FRAME_SIZE;
-		int offset = virtual_addr - page_start;
-		return frame_start + offset;
+	public Word get(int addr) {
+		int frame = addr / Memory.FRAME_SIZE;
+		int frame_start = frame * Memory.FRAME_SIZE;
+		int offset = addr - frame_start;
+		return this.memory[frame][offset];
 	}
 
 	public Word[][] getMemory() {

@@ -11,6 +11,7 @@ public class VirtualMachine {
 		Scanner in = new Scanner(System.in);
 
 		while (true) {
+			System.out.print("[user@host]& ");
 			String[] input = in.nextLine().split(" ");
 
 			switch(input[0]) {
@@ -30,6 +31,8 @@ public class VirtualMachine {
 					break;
 				case "exit":
 					return;
+				case "":
+					break;
 				default:
 					System.out.println(
 						"system: command not found: " + input[0]

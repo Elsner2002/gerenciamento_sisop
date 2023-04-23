@@ -6,6 +6,13 @@ public class Cpu {
 	private InterruptHandler interruptHandler;
 	private SyscallHandler syscallHandler;
 
+	public Cpu() {
+		this.state = new CpuState();
+		this.memory = new Memory();
+		this.interruptHandler = new InterruptHandler();
+		this.syscallHandler = new SyscallHandler();
+	}
+
 	public void run() {
 		while (true) {
 			fetch();
@@ -19,8 +26,7 @@ public class Cpu {
 			return;
 		}
 
-		// TODO
-		this.state.setIr(null);
+		this.state.setIr(memory.get(this.state.getPc()));
 	}
 
 	private void execute() {
@@ -69,8 +75,12 @@ public class Cpu {
 				}
 
 				break;
-			// TODO.
 			case JMPIEM:
+				if (r2 == 0 && isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setPc(addr);
+				}
+
 				break;
 			case JMPIG:
 				if (r2 > 0) {
@@ -86,8 +96,12 @@ public class Cpu {
 				}
 
 				break;
-			// TODO.
 			case JMPIGM:
+				if (r2 > 0 && isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setPc(addr);
+				}
+
 				break;
 			case JMPIGT:
 				if (r1 > r2) {
@@ -110,20 +124,36 @@ public class Cpu {
 				}
 
 				break;
-			// TODO.
 			case JMPILM:
+				if (r2 < 0 && isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setPc(addr);
+				}
+
 				break;
-			// TODO.
 			case JMPIM:
+				if (isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setPc(addr);
+				}
+
 				break;
-			// TODO.
 			case LDD:
+				if (isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setReg(ir.r1(), word.param());
+				}
+
 				break;
 			case LDI:
 				this.state.setReg(ir.r1(), ir.param());
 				break;
-			// TODO.
 			case LDX:
+				if (isLegalAddress(r2)) {
+					Word word = memory.get(translateToPhysical(r2));
+					this.state.setReg(ir.r1(), word.param());
+				}
+
 				break;
 			case MOVE:
 				this.state.setReg(ir.r1(), r2);
@@ -180,10 +210,10 @@ public class Cpu {
 		}
 	}
 
-	private int translateToPhysical(int[] pages, int virtual_addr) {
+	private int translateToPhysical(int virtual_addr) {
 		int page = virtual_addr / Memory.FRAME_SIZE;
 		int page_start = page * Memory.FRAME_SIZE;
-		int frame = pages[page];
+		int frame = this.sate.getPages(page);
 		int frame_start = frame * Memory.FRAME_SIZE;
 		int offset = virtual_addr - page_start;
 		return frame_start + offset;

@@ -5,6 +5,7 @@ public class CpuState {
 	private Interrupt irpt;
 	private int memoryBase;
 	private int memoryLimit;
+	private int[] pages;
 	private boolean debugMode;
 
 	public int getPc() {
@@ -65,6 +66,14 @@ public class CpuState {
 
 	public void setMemoryLimit(int memoryLimit) {
 		this.memoryLimit = memoryLimit;
+	}
+
+	public int[] getPages() {
+		return pages;
+	}
+
+	public void setPages(int[] pages) {
+		this.pages = pages;
 	}
 
 	public boolean isDebugMode() {

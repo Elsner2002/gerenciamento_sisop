@@ -22,7 +22,7 @@ public class VirtualMachine {
 					break;
 				case "pdump":
 					break;
-				case "mpdump":
+				case "mdump":
 					break;
 				case "run":
 					break;

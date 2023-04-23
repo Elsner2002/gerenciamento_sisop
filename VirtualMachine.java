@@ -30,6 +30,7 @@ public class VirtualMachine {
 				case "trace":
 					break;
 				case "exit":
+					in.close();
 					return;
 				case "":
 					break;

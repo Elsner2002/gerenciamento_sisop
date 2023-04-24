@@ -32,18 +32,28 @@ public class Cpu {
 	}
 
 	private void execute() {
-		Word ir = null;
+		Word ir = this.state.getIr();
+
+		if (trace) {
+			System.out.println(ir);
+		}
+
 		int r1 = -1;
 		int r2 = -1;
 		int param = -1;
 		boolean jump = false;
 
-		try {
-			ir = this.state.getIr();
+		if (ir.r1() > 0 && ir.r1() < Cpu.NUM_GENERAL_PURPOSE_REGS) {
 			r1 = this.state.getReg(ir.r1());
+		}
+
+		if (ir.r2() > 0 && ir.r2() < Cpu.NUM_GENERAL_PURPOSE_REGS) {
 			r2 = this.state.getReg(ir.r2());
+		}
+
+		if (ir.param() > 0 && ir.param() < Cpu.NUM_GENERAL_PURPOSE_REGS) {
 			param = this.state.getReg(ir.param());
-		} catch (Exception e) { }
+		}
 
 		switch (this.state.getIr().opcode()) {
 			case ADD:
@@ -58,7 +68,6 @@ public class Cpu {
 				int sumI = r1 + param;
 
 				if (!isOverflow(sumI)) {
-					//System.out.println(ir.r1());
 					this.state.setReg(ir.r1(), sumI);
 				}
 
@@ -245,16 +254,7 @@ public class Cpu {
 
 	// TODO: Adapt to paging.
 	private boolean isLegalAddress(int addr) {
-
-		 if (
-		 	addr < this.state.getMemoryBase() ||
-		 	addr > this.state.getMemoryLimit()
-		 ) {
-		 	this.state.setIrpt(Interrupt.INVALID_ADDRESS);
-		 	return false;
-		 }
-
-		 return true;
+		return true;
 	}
 
 	public boolean getTrace() {

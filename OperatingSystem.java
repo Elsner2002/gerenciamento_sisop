@@ -127,7 +127,7 @@ public class OperatingSystem {
 	}
 
 	private static void run(String pid) {
-		 try {
+		try {
 			int numPid = Integer.parseInt(pid);
 			OperatingSystem.processManager.run(numPid);
 
@@ -135,9 +135,9 @@ public class OperatingSystem {
 				.getProcess(numPid);
 
 			OperatingSystem.cpu.run(process);
-		 } catch (Exception e) {
+		} catch (Exception e) {
 		 	System.out.println("run: invalid pid");
-		 }
+		}
 	}
 
 	private static void trace() {

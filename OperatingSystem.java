@@ -4,10 +4,17 @@ public class OperatingSystem {
 	private static Cpu cpu;
 	private static Memory memory;
 	private static ProcessManager processManager;
+	private static MemoryManager memoryManager;
 
 	public static void main(String[] args) {
 		OperatingSystem.memory = new Memory();
 		OperatingSystem.cpu = new Cpu();
+		OperatingSystem.memoryManager = new MemoryManager();
+
+		OperatingSystem.processManager = new ProcessManager(
+			OperatingSystem.memoryManager
+		);
+
 		run();
 	}
 
@@ -20,22 +27,22 @@ public class OperatingSystem {
 
 			switch(input[0]) {
 				case "new":
-					OperatingSystem.new_(input[0]);
+					OperatingSystem.new_(input[1]);
 					break;
 				case "kill":
-					OperatingSystem.kill(input[0]);
+					OperatingSystem.kill(input[1]);
 					break;
 				case "ps":
 					OperatingSystem.ps();
 					break;
 				case "pdump":
-					OperatingSystem.pdump(input[0]);
+					OperatingSystem.pdump(input[1]);
 					break;
 				case "mdump":
 					OperatingSystem.mdump(input);
 					break;
 				case "run":
-					OperatingSystem.run(input[0]);
+					OperatingSystem.run(input[1]);
 					break;
 				case "trace":
 					OperatingSystem.trace();
@@ -56,13 +63,15 @@ public class OperatingSystem {
 	}
 
 	private static void new_(String name) {
-		try {
+		// try {
+			System.out.println(
 			OperatingSystem.processManager.createProcess(
 				Programs.get(name)
-			);
-		} catch (Exception e) {
-			System.out.println("new: unknown program");
-		}
+			));
+		// } catch (Exception e) {
+		// 	System.out.println(e);
+		// 	System.out.println("new: unknown program");
+		// }
 	}
 
 	private static void kill(String pid) {

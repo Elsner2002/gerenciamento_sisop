@@ -1,10 +1,22 @@
+import java.lang.Math;
+
 public class MemoryManager {
 	private Memory memory;
-	private int numOccupiedFrames = 0;
+	private int numOccupiedFrames;
 	private boolean[] occupiedFrames;
 
+	public MemoryManager() {
+		this.memory = new Memory();
+		this.numOccupiedFrames = 0;
+		this.occupiedFrames = new boolean[Memory.FRAME_AMOUNT];
+	}
+
+	public int getNumOccupiedFrames() {
+		return numOccupiedFrames;
+	}
+
 	public boolean fillFrames(int[] frames, Word[] words) {
-		if (words.length < frames.length * Memory.FRAME_SIZE) {
+		if (words.length > frames.length * Memory.FRAME_SIZE) {
 			return false;
 		}
 
@@ -14,22 +26,32 @@ public class MemoryManager {
 			}
 		}
 
-		for (int remaining = words.length; remaining > 0; remaining--) {
+		int framesNeeded = Math.ceilDiv(words.length, Memory.FRAME_SIZE);
+
+		for (int framesLeft = framesNeeded; framesLeft > 0; framesLeft--) {
+			int frameIndex = framesNeeded - framesLeft;
 			Word[] slice = new Word[Memory.FRAME_SIZE];
+			int length = Memory.FRAME_SIZE;
+
+			if (framesLeft == 1) {
+				length = words.length % Memory.FRAME_SIZE;
+			}
 
 			System.arraycopy(
-				words, (words.length - remaining) * Memory.FRAME_SIZE,
-				slice, 0, Memory.FRAME_SIZE
+				words, frameIndex * Memory.FRAME_SIZE,
+				slice, 0, length
 			);
 
-			this.memory.setFrame(frames[words.length - remaining], slice);
+			this.memory.setFrame(frames[frameIndex], slice);
 		}
 
 		return true;
 	}
 
 	public int[] allocate(int framesNeeded) {
-		if (this.numOccupiedFrames < framesNeeded) {
+		if (
+			framesNeeded > Memory.FRAME_AMOUNT - this.getNumOccupiedFrames()
+		) {
 			return null;
 		}
 

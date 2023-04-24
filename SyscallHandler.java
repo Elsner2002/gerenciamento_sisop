@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 public class SyscallHandler {
-	public void handle(CpuState cpuState) {
+	public static void handle(CpuState cpuState) {
         if (cpuState.getReg(8) == 1) {
             int elementR9 = cpuState.getReg(9);
             Scanner in = new Scanner(System.in);

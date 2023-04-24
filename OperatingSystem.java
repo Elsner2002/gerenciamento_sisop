@@ -4,19 +4,17 @@ public class OperatingSystem {
 	private static Cpu cpu;
 	private static Memory memory;
 	private static ProcessManager processManager;
-	private static MemoryManager memoryManager;
 
 	public static void main(String[] args) {
-		OperatingSystem.memory = new Memory();
-		OperatingSystem.cpu = new Cpu(OperatingSystem.memory);
+		Memory memory = new Memory();
+		MemoryManager memoryManager = new MemoryManager(memory);
+		ProcessManager processManager = new ProcessManager(memoryManager);
+		InterruptHandler interruptHandler = new InterruptHandler(processManager);
+		Cpu cpu = new Cpu(memory, interruptHandler);
 
-		OperatingSystem.memoryManager = new MemoryManager(
-			OperatingSystem.memory
-		);
-
-		OperatingSystem.processManager = new ProcessManager(
-			OperatingSystem.memoryManager
-		);
+		OperatingSystem.cpu = cpu;
+		OperatingSystem.memory = memory;
+		OperatingSystem.processManager = processManager;
 
 		run();
 	}

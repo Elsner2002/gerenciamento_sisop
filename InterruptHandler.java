@@ -1,10 +1,8 @@
 public class InterruptHandler {
-    private ProcessManager pm;
-    private MemoryManager mm;
+    private ProcessManager processManager;
 
-    public InterruptHandler(Memory memory){
-        mm = new MemoryManager(memory);
-		pm = new ProcessManager(mm);
+    public InterruptHandler(ProcessManager processManager){
+        this.processManager = processManager;
     }
 
 	public void handle(CpuState cpuState) {
@@ -17,15 +15,15 @@ public class InterruptHandler {
                     System.out.println(i.toString());
                 }
             */
-                pm.killRunning();
+                processManager.killRunning();
                 System.out.println("Error: INVALID_ADDRESS");
                 break;
             case INVALID_INSTRUCTION:
-                pm.killRunning();
+                processManager.killRunning();
                 System.out.println("Error: INVALID_INSTRUCTION");
                 break;
             case OVERFLOW:
-                pm.killRunning();
+                processManager.killRunning();
                 System.out.println("Error: OVERFLOW");
                 break;
             case STOP:

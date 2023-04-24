@@ -4,15 +4,13 @@ public class Cpu {
 	public static final int MAX_INT = 32767;
 	private CpuState state;
 	private Memory memory;
-	private InterruptHandler interruptHandler;
-	private SyscallHandler syscallHandler;
 	private boolean trace = false;
+	private InterruptHandler interruptHandler;
 
-	public Cpu(Memory memory) {
+	public Cpu(Memory memory, InterruptHandler interruptHandler) {
 		this.state = new CpuState();
 		this.memory = memory;
-		this.interruptHandler = new InterruptHandler(this.memory);
-		this.syscallHandler = new SyscallHandler();
+		this.interruptHandler = interruptHandler;
 	}
 
 	public void run(Process p) {
@@ -209,7 +207,7 @@ public class Cpu {
 
 				break;
 			case TRAP:
-				this.syscallHandler.handle(this.state);
+				SyscallHandler.handle(this.state);
 				break;
 			default:
 				this.state.setIrpt(Interrupt.INVALID_INSTRUCTION);
@@ -247,7 +245,7 @@ public class Cpu {
 
 	// TODO: Adapt to paging.
 	private boolean isLegalAddress(int addr) {
-		
+
 		 if (
 		 	addr < this.state.getMemoryBase() ||
 		 	addr > this.state.getMemoryLimit()
@@ -255,7 +253,7 @@ public class Cpu {
 		 	this.state.setIrpt(Interrupt.INVALID_ADDRESS);
 		 	return false;
 		 }
-		
+
 		 return true;
 	}
 

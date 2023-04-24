@@ -15,7 +15,6 @@ public class ProcessManager {
 		return processes;
 	}
 
-	// TODO: Improve
 	public void run(int id) {
 		this.processes.get(id).getPcb().setState(ProcessState.RUNNING);
 	}

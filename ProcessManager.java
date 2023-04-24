@@ -13,11 +13,17 @@ public class ProcessManager {
 
 	// TODO: Improve
 	public void run(int id) {
-		this.processes.get(id).getPcb().changeRunning();
+		this.processes.get(id).getPcb().setState(ProcessState.RUNNING);
 	}
 
 	public Process getProcess(int id){
 		return processes.get(id);
+	}
+
+	public Process[] getProcesses() {
+		return this.processes.values().toArray(new Process[
+			this.processes.values().size()
+		]);
 	}
 
 	public int createProcess(Word[] words) {
@@ -44,17 +50,13 @@ public class ProcessManager {
 	public void killProcess(int pid) {
 		Process process = this.processes.get(pid);
 		this.memoryManager.desallocate(process.getPcb().getFrames());
-		process.getPcb().changeRunning();
 		this.processes.remove(pid);
 	}
 
-	public void killProcess() {
+	public void killRunning() {
 		for (int p: processes.keySet()){
-			if(processes.get(p).getPcb().isRunning()){
-				Process process = this.processes.get(p);
-				this.memoryManager.desallocate(process.getPcb().getFrames());
-				process.getPcb().changeRunning();
-				this.processes.remove(p);
+			if (processes.get(p).getPcb().getState() == ProcessState.RUNNING) {
+				this.killProcess(p);
 				break;
 			}
 		}

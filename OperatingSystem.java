@@ -4,10 +4,20 @@ public class OperatingSystem {
 	private static Cpu cpu;
 	private static Memory memory;
 	private static ProcessManager processManager;
+	private static MemoryManager memoryManager;
 
 	public static void main(String[] args) {
 		OperatingSystem.memory = new Memory();
-		OperatingSystem.cpu = new Cpu();
+		OperatingSystem.cpu = new Cpu(OperatingSystem.memory);
+
+		OperatingSystem.memoryManager = new MemoryManager(
+			OperatingSystem.memory
+		);
+
+		OperatingSystem.processManager = new ProcessManager(
+			OperatingSystem.memoryManager
+		);
+
 		run();
 	}
 
@@ -20,22 +30,22 @@ public class OperatingSystem {
 
 			switch(input[0]) {
 				case "new":
-					OperatingSystem.new_(input[0]);
+					OperatingSystem.new_(input[1]);
 					break;
 				case "kill":
-					OperatingSystem.kill(input[0]);
+					OperatingSystem.kill(input[1]);
 					break;
 				case "ps":
 					OperatingSystem.ps();
 					break;
 				case "pdump":
-					OperatingSystem.pdump(input[0]);
+					OperatingSystem.pdump(input[1]);
 					break;
 				case "mdump":
 					OperatingSystem.mdump(input);
 					break;
 				case "run":
-					OperatingSystem.run(input[0]);
+					OperatingSystem.run(input[1]);
 					break;
 				case "trace":
 					OperatingSystem.trace();
@@ -77,14 +87,10 @@ public class OperatingSystem {
 		System.out.println("id   state   name");
 		System.out.println("--   -----   ----");
 
-		for(int id : idProcess) {
-			String state = OperatingSystem.processManager.getProcess(id)
-				.getPcb().getState();
-
-			String name = Programs.getName(
-				pm.getProcess(id).getWords()
-			);
-
+		for(Process p : OperatingSystem.processManager.getProcesses()) {
+			int id = p.getPcb().getId();
+			ProcessState state = p.getPcb().getState();
+			String name = Programs.getName(p.getWords());
 			System.out.println(id + "   " + state + "   " + name);
 		}
 	}
@@ -107,11 +113,11 @@ public class OperatingSystem {
 			int start = Integer.parseInt(input[1]);
 			int end = Integer.parseInt(input[2]);
 
-			for (int i = start; i < end; i++) {
+			for (int i = start; i <= end; i++) {
 				System.out.println("frame " + i);
 
-				for (Word word: memory.getFrame(i)) {
-					System.out.println(word);
+				for (Word word: OperatingSystem.memory.getFrame(i)) {
+					System.out.println("    " + word);
 				}
 			}
 		} catch (NumberFormatException e) {
@@ -123,12 +129,17 @@ public class OperatingSystem {
 	}
 
 	private static void run(String pid) {
-		try {
-			OperatingSystem.processManager.run(Integer.parseInt(pid));
-			OperatingSystem.cpu.run();
-		} catch (Exception e) {
-			System.out.println("run: invalid pid");
-		}
+		// try {
+			int numPid = Integer.parseInt(pid);
+			OperatingSystem.processManager.run(numPid);
+
+			Process process = OperatingSystem.processManager
+				.getProcess(numPid);
+
+			OperatingSystem.cpu.run(process);
+		// } catch (Exception e) {
+		// 	System.out.println("run: invalid pid");
+		// }
 	}
 
 	private static void trace() {

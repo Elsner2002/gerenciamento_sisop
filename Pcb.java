@@ -1,14 +1,13 @@
 public class Pcb {
 	private int id;
 	private int pc;
-	private boolean running;
-	private boolean ready;
-	private CpuState cpuState;
+	private ProcessState state;
 	private int[] frames;
 
 	public Pcb(int id, int[] frames) {
 		this.id = id;
 		this.frames = frames;
+		this.state = ProcessState.READY;
 	}
 
 	public int getId() {
@@ -23,37 +22,22 @@ public class Pcb {
 		return this.frames;
 	}
 
-	public String getState() {
-		if(running){
-			return "Running";
-		} else if(ready) {
-			return "Ready";
-		} else {
-			return "Blocked";
-		}
+	public ProcessState getState() {
+		return this.state;
 	}
 
-	public boolean isReady() {
-		return ready;
-	}
-
-	public boolean isRunning() {
-		return running;
-	}
-
-	public void changeRunning(){
-		running = !running;
-	}
-
-	public void changeReady(){
-		ready = !ready;
+	public void setState(ProcessState state) {
+		this.state = state;
 	}
 
 	public String toString(){
-		String content = "ID: "+ id + "\nPC: " + pc+ "\nState: " + getState()+ "\nFrames: ";
-		for(int frame: frames){
-			content+= frame + "\n";
+		String content = "id: " + id + "\npc: " + pc + "\nstate: " + getState()
+			+ "\nframes: ";
+
+		for(int frame: frames) {
+			content += frame + " ";
 		}
+
 		return content;
 	}
 }

@@ -5,7 +5,7 @@ public class CpuState {
 	private Interrupt irpt;
 	private int memoryBase;
 	private int memoryLimit;
-	private int[] pages;
+	private int[] frames;
 	private boolean running;
 	private boolean debugMode;
 
@@ -73,12 +73,12 @@ public class CpuState {
 		this.memoryLimit = memoryLimit;
 	}
 
-	public int[] getPages() {
-		return pages;
+	public int[] getFrames() {
+		return frames;
 	}
 
-	public void setPages(int[] pages) {
-		this.pages = pages;
+	public void setFrames(int[] frames) {
+		this.frames = frames;
 	}
 
 	public boolean isRunning() {

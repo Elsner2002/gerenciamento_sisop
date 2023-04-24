@@ -1,7 +1,7 @@
 import java.util.Map;
 
 class Programs {
-	public static final get(String name) {
+	public static final Word[] get(String name) {
 		return Programs.programs.get(name);
 	}
 
@@ -232,12 +232,12 @@ class Programs {
 		new Word(Opcode.DATA, -1, -1, -1)};
 
 	private static final Map<String, Word[]> programs = Map.ofEntries(
-		entry("fac", fatorial),
-		entry("factrap", fatorialTRAP),
-		entry("min", progMinimo),
-		entry("fib", fibonacci10),
-		entry("fibtrap", fibonacciTRAP),
-		entry("pb", PB),
-		entry("pc", PC)
+		Map.entry("fac", fatorial),
+		Map.entry("factrap", fatorialTRAP),
+		Map.entry("min", progMinimo),
+		Map.entry("fib", fibonacci10),
+		Map.entry("fibtrap", fibonacciTRAP),
+		Map.entry("pb", PB),
+		Map.entry("pc", PC)
 	);
 }

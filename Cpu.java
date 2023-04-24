@@ -81,7 +81,7 @@ public class Cpu {
 			case JMPIEM:
 				if (r2 == 0 && isLegalAddress(ir.param())) {
 					Word word = memory.get(translateToPhysical(ir.param()));
-					this.state.setPc(addr);
+					this.state.setPc(word.param());
 				}
 
 				break;
@@ -102,7 +102,7 @@ public class Cpu {
 			case JMPIGM:
 				if (r2 > 0 && isLegalAddress(ir.param())) {
 					Word word = memory.get(translateToPhysical(ir.param()));
-					this.state.setPc(addr);
+					this.state.setPc(word.param());
 				}
 
 				break;
@@ -130,14 +130,14 @@ public class Cpu {
 			case JMPILM:
 				if (r2 < 0 && isLegalAddress(ir.param())) {
 					Word word = memory.get(translateToPhysical(ir.param()));
-					this.state.setPc(addr);
+					this.state.setPc(word.param());
 				}
 
 				break;
 			case JMPIM:
 				if (isLegalAddress(ir.param())) {
 					Word word = memory.get(translateToPhysical(ir.param()));
-					this.state.setPc(addr);
+					this.state.setPc(word.param());
 				}
 
 				break;
@@ -180,7 +180,7 @@ public class Cpu {
 				break;
 			case STX:
 				if (isLegalAddress(r1)) {
-					this.memory.set(translateToPhysical(r1, r2));
+					this.memory.set(translateToPhysical(r1), r2);
 				}
 
 				break;
@@ -222,7 +222,7 @@ public class Cpu {
 	private int translateToPhysical(int virtual_addr) {
 		int page = virtual_addr / Memory.FRAME_SIZE;
 		int page_start = page * Memory.FRAME_SIZE;
-		int frame = this.sate.getPages(page);
+		int frame = this.state.getPages()[page];
 		int frame_start = frame * Memory.FRAME_SIZE;
 		int offset = virtual_addr - page_start;
 		return frame_start + offset;

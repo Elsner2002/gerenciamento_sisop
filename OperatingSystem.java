@@ -77,15 +77,10 @@ public class OperatingSystem {
 		System.out.println("id   state   name");
 		System.out.println("--   -----   ----");
 
-		for(int id : idProcess) {
-			String state = OperatingSystem.processManager.getProcess(id)
-				.getPcb().getState();
-
-			String name = Programs.getName(
-				pm.getProcess(id).getWords()
-			);
-
-			System.out.println(id + "   " + state + "   " + name);
+		for(Process p : OperatingSystem.processManager.getProcesses()) {
+			String state = p.getPcb().getState();
+			String name = Programs.getName(p.getWords());
+			System.out.println(p.getPcb().getId() + "   " + state + "   " + name);
 		}
 	}
 

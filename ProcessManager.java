@@ -20,6 +20,12 @@ public class ProcessManager {
 		return processes.get(id);
 	}
 
+	public Process[] getProcesses() {
+		return this.processes.values().toArray(new Process[
+			this.processes.values().size()
+		]);
+	}
+
 	public int createProcess(Word[] words) {
 		int framesNeeded = (words.length / Memory.FRAME_SIZE) + 1;
 		int[] frames = this.memoryManager.allocate(framesNeeded);

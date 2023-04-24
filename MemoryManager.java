@@ -5,8 +5,8 @@ public class MemoryManager {
 	private int numOccupiedFrames;
 	private boolean[] occupiedFrames;
 
-	public MemoryManager() {
-		this.memory = new Memory();
+	public MemoryManager(Memory memory) {
+		this.memory = memory;
 		this.numOccupiedFrames = 0;
 		this.occupiedFrames = new boolean[Memory.FRAME_AMOUNT];
 	}

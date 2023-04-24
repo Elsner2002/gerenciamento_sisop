@@ -29,7 +29,11 @@ public class Cpu {
 			return;
 		}
 
-		this.state.setIr(memory.get(this.state.getPc()));
+		System.out.println(this.memory);
+		System.out.println(this.state);
+		System.out.println(this.state.getPc());
+
+		this.state.setIr(this.memory.get(this.state.getPc()));
 	}
 
 	private void execute() {
@@ -237,16 +241,19 @@ public class Cpu {
 		return false;
 	}
 
+	// TODO: Adapt to paging.
 	private boolean isLegalAddress(int addr) {
-		if (
-			addr < this.state.getMemoryBase() ||
-			addr > this.state.getMemoryLimit()
-		) {
-			this.state.setIrpt(Interrupt.INVALID_ADDRESS);
-			return false;
-		}
-
 		return true;
+		//
+		// if (
+		// 	addr < this.state.getMemoryBase() ||
+		// 	addr > this.state.getMemoryLimit()
+		// ) {
+		// 	this.state.setIrpt(Interrupt.INVALID_ADDRESS);
+		// 	return false;
+		// }
+		//
+		// return true;
 	}
 
 	public boolean getTrace() {
@@ -259,7 +266,6 @@ public class Cpu {
 
 	public void run(Process p) {
 		processRunning = p;
-		processRunning.getPcb().changeReady();
-		processRunning.getPcb().changeRunning();
+		processRunning.getPcb().setState(ProcessState.RUNNING);
 	}
 }

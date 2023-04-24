@@ -9,7 +9,7 @@ public class OperatingSystem {
 	public static void main(String[] args) {
 		OperatingSystem.memory = new Memory();
 		OperatingSystem.cpu = new Cpu();
-		OperatingSystem.memoryManager = new MemoryManager();
+		OperatingSystem.memoryManager = new MemoryManager(memory);
 
 		OperatingSystem.processManager = new ProcessManager(
 			OperatingSystem.memoryManager
@@ -63,15 +63,13 @@ public class OperatingSystem {
 	}
 
 	private static void new_(String name) {
-		// try {
-			System.out.println(
+		try {
 			OperatingSystem.processManager.createProcess(
 				Programs.get(name)
-			));
-		// } catch (Exception e) {
-		// 	System.out.println(e);
-		// 	System.out.println("new: unknown program");
-		// }
+			);
+		} catch (Exception e) {
+			System.out.println("new: unknown program");
+		}
 	}
 
 	private static void kill(String pid) {
@@ -87,9 +85,10 @@ public class OperatingSystem {
 		System.out.println("--   -----   ----");
 
 		for(Process p : OperatingSystem.processManager.getProcesses()) {
-			String state = p.getPcb().getState();
+			int id = p.getPcb().getId();
+			ProcessState state = p.getPcb().getState();
 			String name = Programs.getName(p.getWords());
-			System.out.println(p.getPcb().getId() + "   " + state + "   " + name);
+			System.out.println(id + "   " + state + "   " + name);
 		}
 	}
 
@@ -111,11 +110,11 @@ public class OperatingSystem {
 			int start = Integer.parseInt(input[1]);
 			int end = Integer.parseInt(input[2]);
 
-			for (int i = start; i < end; i++) {
+			for (int i = start; i <= end; i++) {
 				System.out.println("frame " + i);
 
-				for (Word word: memory.getFrame(i)) {
-					System.out.println(word);
+				for (Word word: OperatingSystem.memory.getFrame(i)) {
+					System.out.println("    " + word);
 				}
 			}
 		} catch (NumberFormatException e) {
@@ -127,12 +126,12 @@ public class OperatingSystem {
 	}
 
 	private static void run(String pid) {
-		try {
+		// try {
 			OperatingSystem.processManager.run(Integer.parseInt(pid));
 			OperatingSystem.cpu.run();
-		} catch (Exception e) {
-			System.out.println("run: invalid pid");
-		}
+		// } catch (Exception e) {
+		// 	System.out.println("run: invalid pid");
+		// }
 	}
 
 	private static void trace() {

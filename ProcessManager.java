@@ -11,6 +11,15 @@ public class ProcessManager {
 		this.processes = new HashMap<>();
 	}
 
+	// TODO: Improve
+	public void run(int id) {
+		this.processes.get(id).getPcb().changeRunning();
+	}
+
+	public Process getProcess(int id){
+		return processes.get(id);
+	}
+
 	public int createProcess(Word[] words) {
 		int framesNeeded = (words.length / Memory.FRAME_SIZE) + 1;
 		int[] frames = this.memoryManager.allocate(framesNeeded);
@@ -35,6 +44,19 @@ public class ProcessManager {
 	public void killProcess(int pid) {
 		Process process = this.processes.get(pid);
 		this.memoryManager.desallocate(process.getPcb().getFrames());
+		process.getPcb().changeRunning();
 		this.processes.remove(pid);
+	}
+
+	public void killProcess() {
+		for (int p: processes.keySet()){
+			if(processes.get(p).getPcb().isRunning()){
+				Process process = this.processes.get(p);
+				this.memoryManager.desallocate(process.getPcb().getFrames());
+				process.getPcb().changeRunning();
+				this.processes.remove(p);
+				break;
+			}
+		}
 	}
 }

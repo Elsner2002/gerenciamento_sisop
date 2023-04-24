@@ -1,9 +1,234 @@
 public class Cpu {
+	public static final int NUM_GENERAL_PURPOSE_REGS = 8;
 	public static final int MIN_INT = -32767;
 	public static final int MAX_INT = 32767;
 	private CpuState state;
+	private Memory memory;
+	private InterruptHandler interruptHandler;
+	private SyscallHandler syscallHandler;
+	private boolean trace = false;
+	private Process processRunning;
 
-	private boolean testForOverflow(int v) {
+	public Cpu() {
+		this.state = new CpuState();
+		this.memory = new Memory();
+		this.interruptHandler = new InterruptHandler();
+		this.syscallHandler = new SyscallHandler();
+	}
+
+	public void run() {
+		while (true) {
+			fetch();
+			execute();
+			interrupt();
+		}
+	}
+
+	private void fetch() {
+		if (!isLegalAddress(this.state.getPc())) {
+			return;
+		}
+
+		this.state.setIr(memory.get(this.state.getPc()));
+	}
+
+	private void execute() {
+		Word ir = this.state.getIr();
+		int r1 = this.state.getReg(ir.r1());
+		int r2 = this.state.getReg(ir.r2());
+		int param = this.state.getReg(ir.param());
+		boolean jump = false;
+
+		switch (this.state.getIr().opcode()) {
+			case ADD:
+				int sum = r1 + r2;
+
+				if (!isOverflow(sum)) {
+					this.state.setReg(r1, sum);
+				}
+
+				break;
+			case ADDI:
+				int sumI = r1 + ir.param();
+
+				if (!isOverflow(sumI)) {
+					this.state.setReg(r1, sumI);
+				}
+
+				break;
+			case JMP:
+				this.state.setPc(ir.param());
+				jump = true;
+				break;
+			case JMPI:
+				this.state.setPc(ir.r1());
+				jump = true;
+				break;
+			case JMPIE:
+				if (r2 == 0) {
+					this.state.setPc(r1);
+					jump = true;
+				}
+
+				break;
+			case JMPIEK:
+				if (r2 == 0) {
+					this.state.setPc(param);
+					jump = true;
+				}
+
+				break;
+			case JMPIEM:
+				if (r2 == 0 && isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setPc(addr);
+				}
+
+				break;
+			case JMPIG:
+				if (r2 > 0) {
+					this.state.setPc(r1);
+					jump = true;
+				}
+
+				break;
+			case JMPIGK:
+				if (r2 > 0) {
+					this.state.setPc(param);
+					jump = true;
+				}
+
+				break;
+			case JMPIGM:
+				if (r2 > 0 && isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setPc(addr);
+				}
+
+				break;
+			case JMPIGT:
+				if (r1 > r2) {
+					this.state.setPc(param);
+					jump = true;
+				}
+
+				break;
+			case JMPIL:
+				if (r2 < 0) {
+					this.state.setPc(r1);
+					jump = true;
+				}
+
+				break;
+			case JMPILK:
+				if (r2 < 0) {
+					this.state.setPc(param);
+					jump = true;
+				}
+
+				break;
+			case JMPILM:
+				if (r2 < 0 && isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setPc(addr);
+				}
+
+				break;
+			case JMPIM:
+				if (isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setPc(addr);
+				}
+
+				break;
+			case LDD:
+				if (isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
+					this.state.setReg(ir.r1(), word.param());
+				}
+
+				break;
+			case LDI:
+				this.state.setReg(ir.r1(), ir.param());
+				break;
+			case LDX:
+				if (isLegalAddress(r2)) {
+					Word word = memory.get(translateToPhysical(r2));
+					this.state.setReg(ir.r1(), word.param());
+				}
+
+				break;
+			case MOVE:
+				this.state.setReg(ir.r1(), r2);
+				break;
+			case MULT:
+				int mult = r1 * r2;
+
+				if (!isOverflow(mult)) {
+					this.state.setReg(r1, mult);
+				}
+
+				break;
+			case STD:
+				if (isLegalAddress(ir.param())) {
+					this.memory.set(translateToPhysical(ir.param()), r1);
+				}
+
+				break;
+			case STOP:
+				this.state.setIrpt(Interrupt.STOP);
+				break;
+			case STX:
+				if (isLegalAddress(r1)) {
+					this.memory.set(translateToPhysical(r1, r2));
+				}
+
+				break;
+			case SUB:
+				int sub = r1 - r2;
+
+				if (!isOverflow(sub)) {
+					this.state.setReg(r1, sub);
+				}
+
+				break;
+			case SUBI:
+				int subI = r1 + ir.param();
+
+				if (!isOverflow(subI)) {
+					this.state.setReg(r1, subI);
+				}
+
+				break;
+			case TRAP:
+				this.syscallHandler.handle(this.state);
+				break;
+			default:
+				this.state.setIrpt(Interrupt.INVALID_INSTRUCTION);
+				break;
+		}
+
+		if (!jump) {
+			this.state.incPc();
+		}
+	}
+
+	private void interrupt() {
+		if (this.state.getIrpt() != null) {
+			interruptHandler.handle(this.state);
+		}
+	}
+
+	private int translateToPhysical(int virtual_addr) {
+		int page = virtual_addr / Memory.FRAME_SIZE;
+		int page_start = page * Memory.FRAME_SIZE;
+		int frame = this.sate.getPages(page);
+		int frame_start = frame * Memory.FRAME_SIZE;
+		int offset = virtual_addr - page_start;
+		return frame_start + offset;
+	}
+
+	private boolean isOverflow(int v) {
 		if (v < Cpu.MIN_INT || v > Cpu.MAX_INT) {
 			this.state.setIrpt(Interrupt.OVERFLOW);
 			return true;
@@ -12,218 +237,29 @@ public class Cpu {
 		return false;
 	}
 
-	private boolean legal(int e) {                             // todo acesso a memoria tem que ser verificado
-		if(e<0 || e>memory.MEMORY_SIZE){
+	private boolean isLegalAddress(int addr) {
+		if (
+			addr < this.state.getMemoryBase() ||
+			addr > this.state.getMemoryLimit()
+		) {
+			this.state.setIrpt(Interrupt.INVALID_ADDRESS);
 			return false;
 		}
+
 		return true;
 	}
 
-	public void run() { 		// execucao da CPU supoe que o contexto da CPU, vide acima, esta devidamente setado			
-		while (true) { 			// ciclo de instrucoes. acaba cfe instrucao, veja cada caso.
-		   // --------------------------------------------------------------------------------------------------
-		   // FETCH
-			if (legal(pc)) { 	// pc valido
-				ir = memory.get(pc); 	// <<<<<<<<<<<<           busca posicao da memoria apontada por pc, guarda em ir
-				if (debugMode) { System.out.print("                               pc: "+pc+"       exec: ");  mem.dump(ir); }
-		   // --------------------------------------------------------------------------------------------------
-		   // EXECUTA INSTRUCAO NO ir
-				switch (ir.opcode) {   // conforme o opcode (código de operação) executa
+	public boolean getTrace() {
+		return this.trace;
+	}
 
-				// Instrucoes de Busca e Armazenamento em Memoria
-					case LDI: // Rd ← k
-						registers[ir.r1] = ir.param;
-						pc++;
-						break;
+	public void toggleTrace() {
+		this.trace = !this.trace;
+	}
 
-					case LDD: // Rd <- [A]
-						if (legal(ir.param)) {
-						   registers[ir.r1] = memory.get(ir.param).param;
-						   pc++;
-						}
-						break;
-
-					case LDX: // RD <- [RS] // NOVA
-						if (legal(registers[ir.r2])) {
-							registers[ir.r1] = memory.get(registers[ir.r2]).param;
-							pc++;
-						}
-						break;
-
-					case STD: // [A] ← Rs
-						if (legal(ir.param)) {
-							memory.get(ir.param).opc = Opcode.DATA;
-							memory.get(ir.param).param = registers[ir.r1];
-							pc++;
-						};
-						break;
-
-					case STX: // [Rd] ←Rs
-						if (legal(registers[ir.r1])) {
-							memory.get(registers[ir.r1]).opc = Opcode.DATA;      
-							memory.get(registers[ir.r1]).param = registers[ir.r2];          
-							pc++;
-						};
-						break;
-					
-					case MOVE: // RD <- RS
-						registers[ir.r1] = registers[ir.r2];
-						pc++;
-						break;	
-						
-				// Instrucoes Aritmeticas
-					case ADD: // Rd ← Rd + Rs
-						registers[ir.r1] = registers[ir.r1] + registers[ir.r2];
-						testOverflow(registers[ir.r1]);
-						pc++;
-						break;
-
-					case ADDI: // Rd ← Rd + k
-						registers[ir.r1] = registers[ir.r1] + ir.param;
-						testOverflow(registers[ir.r1]);
-						pc++;
-						break;
-
-					case SUB: // Rd ← Rd - Rs
-						registers[ir.r1] = registers[ir.r1] - registers[ir.r2];
-						testOverflow(registers[ir.r1]);
-						pc++;
-						break;
-
-					case SUBI: // RD <- RD - k // NOVA
-						registers[ir.r1] = registers[ir.r1] - ir.param;
-						testOverflow(registers[ir.r1]);
-						pc++;
-						break;
-
-					case MULT: // Rd <- Rd * Rs
-						registers[ir.r1] = registers[ir.r1] * registers[ir.r2];  
-						testOverflow(registers[ir.r1]);
-						pc++;
-						break;
-
-				// Instrucoes JUMP
-					case JMP: // PC <- k
-						pc = ir.param;
-						break;
-					
-					case JUPI:
-						pc = ir.r1;
-						break;
-					
-					case JMPIG: // If Rc > 0 Then PC ← Rs Else PC ← PC +1
-						if (registers[ir.r2] > 0) {
-							pc = registers[ir.r1];
-						} else {
-							pc++;
-						}
-						break;
-
-					case JMPIGK: // If RC > 0 then PC <- k else PC++
-						if (registers[ir.r2] > 0) {
-							pc = ir.param;
-						} else {
-							pc++;
-						}
-						break;
-
-					case JMPILK: // If RC < 0 then PC <- k else PC++
-						 if (registers[ir.r2] < 0) {
-							pc = ir.param;
-						} else {
-							pc++;
-						}
-						break;
-
-					case JMPIEK: // If RC = 0 then PC <- k else PC++
-							if (registers[ir.r2] == 0) {
-								pc = ir.param;
-							} else {
-								pc++;
-							}
-						break;
-
-
-					case JMPIL: // if Rc < 0 then PC <- Rs Else PC <- PC +1
-							 if (registers[ir.r2] < 0) {
-								pc = registers[ir.r1];
-							} else {
-								pc++;
-							}
-						break;
-	
-					case JMPIE: // If Rc = 0 Then PC <- Rs Else PC <- PC +1
-							 if (registers[ir.r2] == 0) {
-								pc = registers[ir.r1];
-							} else {
-								pc++;
-							}
-						break; 
-
-					case JMPIM: // PC <- [A]
-							 pc = memory.get(ir.param].param;
-						 break; 
-
-					case JMPIGM: // If RC > 0 then PC <- [A] else PC++
-							 if (registers[ir.r2] > 0) {
-								pc = memory.get(ir.param].param;
-							} else {
-								pc++;
-							}
-						 break;  
-
-					case JMPILM: // If RC < 0 then PC <- k else PC++
-							 if (registers[ir.r2] < 0) {
-								pc = memory.get(ir.param].param;
-							} else {
-								pc++;
-							}
-						 break; 
-
-					case JMPIEM: // If RC = 0 then PC <- k else PC++
-							if (registers[ir.r2] == 0) {
-								pc = memory.get(ir.param].param;
-							} else {
-								pc++;
-							}
-						 break; 
-
-					case JMPIGT: // If RS>RC then PC <- k else PC++
-							if (registers[ir.r1] > registers[ir.r2]) {
-								pc = ir.param;
-							} else {
-								pc++;
-							}
-						 break; 
-
-				// outras
-					case STOP: // por enquanto, para execucao
-						irpt = Interrupts.STOP;
-						break;
-
-					case DATA:
-						irpt = Interrupts.INVALID_INSTRUCTION;
-						break;
-
-				// Chamada de sistema
-					case TRAP:
-						 sysCall.handle();            // <<<<< aqui desvia para rotina de chamada de sistema, no momento so temos IO
-						 pc++;
-						 break;
-
-				// Inexistente
-					default:
-						irpt = Interrupts.INVALID_INSTRUCTION;
-						break;
-				}
-			}
-		   // --------------------------------------------------------------------------------------------------
-		   // VERIFICA INTERRUPÇÃO !!! - TERCEIRA FASE DO CICLO DE INSTRUÇÕES
-			if (!(irpt == Interrupts.noInterrupt)) {   // existe interrupção
-				ih.handle(irpt,pc);                       // desvia para rotina de tratamento
-				break; // break sai do loop da cpu
-			}
-		}  // FIM DO CICLO DE UMA INSTRUÇÃO
+	public void run(Process p) {
+		processRunning = p;
+		processRunning.getPcb().changeReady();
+		processRunning.getPcb().changeRunning();
 	}
 }
-

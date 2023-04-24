@@ -1,5 +1,3 @@
-import java.lang.Math;
-
 public class MemoryManager {
 	private Memory memory;
 	private int numOccupiedFrames;
@@ -27,7 +25,8 @@ public class MemoryManager {
 		}
 
 		int framesNeeded = words.length/Memory.FRAME_SIZE;
-		if (words.length%Memory.FRAME_SIZE!=0){
+
+		if (words.length % Memory.FRAME_SIZE != 0 ){
 			framesNeeded++;
 		}
 

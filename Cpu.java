@@ -19,7 +19,10 @@ public class Cpu {
 		while (true) {
 			fetch();
 			execute();
-			interrupt();
+
+			if (interrupt()) {
+				break;
+			}
 		}
 	}
 
@@ -228,10 +231,8 @@ public class Cpu {
 		}
 	}
 
-	private void interrupt() {
-		if (this.state.getIrpt() != null) {
-			interruptHandler.handle(this.state);
-		}
+	private boolean interrupt() {
+		return interruptHandler.handle(this.state);
 	}
 
 	private int translateToPhysical(int virtual_addr) {

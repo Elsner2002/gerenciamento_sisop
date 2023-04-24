@@ -3,16 +3,11 @@ public class CpuState {
 	private Word ir;
 	private int[] registers;
 	private Interrupt irpt;
-	private int memoryBase;
-	private int memoryLimit;
 	private int[] frames;
-	private boolean running;
 	private boolean debugMode;
 
 	public CpuState() {
 		this.registers = new int[Cpu.NUM_GENERAL_PURPOSE_REGS];
-		this.memoryBase = 0;
-		this.memoryLimit = Memory.MEMORY_SIZE;
 	}
 
 	public int getPc() {
@@ -58,37 +53,12 @@ public class CpuState {
 		this.irpt = irpt;
 	}
 
-	public int getMemoryBase() {
-		return memoryBase;
-	}
-
-	public void setMemoryBase(int memoryBase) {
-		this.memoryBase = memoryBase;
-	}
-
-
-	public int getMemoryLimit() {
-		return memoryLimit;
-	}
-
-	public void setMemoryLimit(int memoryLimit) {
-		this.memoryLimit = memoryLimit;
-	}
-
 	public int[] getFrames() {
 		return frames;
 	}
 
 	public void setFrames(int[] frames) {
 		this.frames = frames;
-	}
-
-	public boolean isRunning() {
-		return running;
-	}
-
-	public void stopProcess() {
-		running = false;
 	}
 
 	public boolean isDebugMode() {

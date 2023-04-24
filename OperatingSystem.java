@@ -93,7 +93,6 @@ public class OperatingSystem {
 		}
 	}
 
-	// TODO: Print pages.
 	private static void pdump(String pid) {
 		try {
 			Process process = OperatingSystem.processManager.getProcess(
@@ -101,8 +100,25 @@ public class OperatingSystem {
 			);
 
 			System.out.println(process.getPcb());
-		} catch (Exception e) {
+			listFramesProcess(process.getPcb().getFrames());
+		}catch (Exception e) {
 			System.out.println("pdump: invalid pid");
+		}
+	}
+
+	private static void listFramesProcess(int[] range){
+		try {
+			for (int r: range) {
+				System.out.println("frame " + r);
+
+				for (Word word: OperatingSystem.memory.getFrame(r)) {
+					System.out.println("    " + word);
+				}
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("pdump: invalid process range");
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("pdump: address out of bounds");
 		}
 	}
 

@@ -35,8 +35,6 @@ Programas:
 - “pb” para o código PB
 - “pc” para o código PC
 
-Nota: Ao executar esses códigos, apenas “fac” e “fib” funcionam propriamente, mas o código “fac” aparenta entrar em loop, ou possui um tempo de execução muito grande.
-
 Comandos:
 - “new <nomeDePrograma>” equivale ao comando “cria <nomeDePrograma>”
 - “ps” equivale ao comando “listaProcessos”
@@ -47,4 +45,10 @@ Comandos:
 - “trace” equivale aos comandos “traceOn e traceOff”, invertendo o valor atual da variável trace
 - “exit” equivale ao comando “exit”
 
+
+Nota: 
+- Ao executar esses códigos, fibTRAP, facTRAP e pc não funcionam
+- Não testamos se o endereco e valido
+- Quando roda um processo depois do outro as vezes da problema as vezes nao
+- Mudamos os codigos pois continham bugs e acessavam memoria nao alocada
 

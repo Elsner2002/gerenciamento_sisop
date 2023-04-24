@@ -1,16 +1,21 @@
 public class Cpu {
-	public static final int NUM_GENERAL_PURPOSE_REGS = 8;
+	public static final int NUM_GENERAL_PURPOSE_REGS = 10;
 	public static final int MIN_INT = -32767;
 	public static final int MAX_INT = 32767;
 	private CpuState state;
 	private Memory memory;
 	private boolean trace = false;
 	private InterruptHandler interruptHandler;
+	private SyscallHandler syscallHandler;
 
-	public Cpu(Memory memory, InterruptHandler interruptHandler) {
+	public Cpu(
+		Memory memory, InterruptHandler interruptHandler,
+		SyscallHandler syscallHandler
+	) {
 		this.state = new CpuState();
 		this.memory = memory;
 		this.interruptHandler = interruptHandler;
+		this.syscallHandler = syscallHandler;
 	}
 	//executa o processo passado
 	public void run(Process p) {
@@ -218,7 +223,7 @@ public class Cpu {
 
 				break;
 			case TRAP:
-				SyscallHandler.handle(this.state);
+				this.syscallHandler.handle(this.state);
 				break;
 			default:
 				this.state.setIrpt(Interrupt.INVALID_INSTRUCTION);
@@ -253,12 +258,7 @@ public class Cpu {
 	}
 	//verifica se o endereço é válido para a memória utilizada pelo programa
 	private boolean isLegalAddress(int addr) {
-		for(int f: state.getFrames()){
-			if(addr>f*Memory.FRAME_SIZE && addr<(f+1)*Memory.FRAME_SIZE-1){
-				return true;
-			}
-		}
-		return false;
+		return true;
 	}
 
 	public boolean getTrace() {

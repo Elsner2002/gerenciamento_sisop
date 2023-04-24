@@ -10,7 +10,8 @@ public class OperatingSystem {
 		MemoryManager memoryManager = new MemoryManager(memory);
 		ProcessManager processManager = new ProcessManager(memoryManager);
 		InterruptHandler interruptHandler = new InterruptHandler(processManager);
-		Cpu cpu = new Cpu(memory, interruptHandler);
+		SyscallHandler syscallHandler = new SyscallHandler(memory);
+		Cpu cpu = new Cpu(memory, interruptHandler, syscallHandler);
 
 		OperatingSystem.cpu = cpu;
 		OperatingSystem.memory = memory;
@@ -23,7 +24,7 @@ public class OperatingSystem {
 		Scanner in = new Scanner(System.in);
 
 		while (true) {
-			System.out.print("[user@host]& ");
+			System.out.print("[dotti@pucrs]& ");
 			String[] input = in.nextLine().split(" ");
 
 			switch(input[0]) {

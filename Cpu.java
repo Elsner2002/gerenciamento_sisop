@@ -11,7 +11,7 @@ public class Cpu {
 	public Cpu(Memory memory) {
 		this.state = new CpuState();
 		this.memory = memory;
-		this.interruptHandler = new InterruptHandler();
+		this.interruptHandler = new InterruptHandler(this.memory);
 		this.syscallHandler = new SyscallHandler();
 	}
 
@@ -52,24 +52,25 @@ public class Cpu {
 				int sum = r1 + r2;
 
 				if (!isOverflow(sum)) {
-					this.state.setReg(r1, sum);
+					this.state.setReg(ir.r1(), sum);
 				}
 
 				break;
 			case ADDI:
-				int sumI = r1 + ir.param();
+				int sumI = r1 + param;
 
 				if (!isOverflow(sumI)) {
-					this.state.setReg(r1, sumI);
+					//System.out.println(ir.r1());
+					this.state.setReg(ir.r1(), sumI);
 				}
 
 				break;
 			case JMP:
-				this.state.setPc(ir.param());
+				this.state.setPc(param);
 				jump = true;
 				break;
 			case JMPI:
-				this.state.setPc(ir.r1());
+				this.state.setPc(r1);
 				jump = true;
 				break;
 			case JMPIE:
@@ -80,7 +81,7 @@ public class Cpu {
 
 				break;
 			case JMPIEK:
-				if (r2 == 0) {
+				if (ir.r2() == 0) {
 					this.state.setPc(param);
 					jump = true;
 				}
@@ -88,7 +89,7 @@ public class Cpu {
 				break;
 			case JMPIEM:
 				if (r2 == 0 && isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(translateToPhysical(param));
 					this.state.setPc(word.param());
 				}
 
@@ -137,30 +138,30 @@ public class Cpu {
 				break;
 			case JMPILM:
 				if (r2 < 0 && isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(translateToPhysical(param));
 					this.state.setPc(word.param());
 				}
 
 				break;
 			case JMPIM:
 				if (isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(translateToPhysical(param));
 					this.state.setPc(word.param());
 				}
 
 				break;
 			case LDD:
 				if (isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(translateToPhysical(param));
 					this.state.setReg(ir.r1(), word.param());
 				}
 
 				break;
 			case LDI:
-				this.state.setReg(ir.r1(), ir.param());
+				this.state.setReg(ir.r1(), param);
 				break;
 			case LDX:
-				if (isLegalAddress(r2)) {
+				if (isLegalAddress(ir.r2())) {
 					Word word = memory.get(translateToPhysical(r2));
 					this.state.setReg(ir.r1(), word.param());
 				}
@@ -173,7 +174,7 @@ public class Cpu {
 				int mult = r1 * r2;
 
 				if (!isOverflow(mult)) {
-					this.state.setReg(r1, mult);
+					this.state.setReg(ir.r1(), mult);
 				}
 
 				break;
@@ -187,24 +188,23 @@ public class Cpu {
 				this.state.setIrpt(Interrupt.STOP);
 				break;
 			case STX:
-				if (isLegalAddress(r1)) {
-					this.memory.set(translateToPhysical(r1), r2);
+				if (isLegalAddress(ir.r1())) {
+					this.memory.set(translateToPhysical(ir.r1()), ir.r2());
 				}
 
 				break;
 			case SUB:
 				int sub = r1 - r2;
-
 				if (!isOverflow(sub)) {
-					this.state.setReg(r1, sub);
+					this.state.setReg(ir.r1(), sub);
 				}
 
 				break;
 			case SUBI:
-				int subI = r1 + ir.param();
+				int subI = r1 + param;
 
 				if (!isOverflow(subI)) {
-					this.state.setReg(r1, subI);
+					this.state.setReg(ir.r1(), subI);
 				}
 
 				break;
@@ -247,17 +247,16 @@ public class Cpu {
 
 	// TODO: Adapt to paging.
 	private boolean isLegalAddress(int addr) {
-		return true;
-		//
-		// if (
-		// 	addr < this.state.getMemoryBase() ||
-		// 	addr > this.state.getMemoryLimit()
-		// ) {
-		// 	this.state.setIrpt(Interrupt.INVALID_ADDRESS);
-		// 	return false;
-		// }
-		//
-		// return true;
+		
+		 if (
+		 	addr < this.state.getMemoryBase() ||
+		 	addr > this.state.getMemoryLimit()
+		 ) {
+		 	this.state.setIrpt(Interrupt.INVALID_ADDRESS);
+		 	return false;
+		 }
+		
+		 return true;
 	}
 
 	public boolean getTrace() {

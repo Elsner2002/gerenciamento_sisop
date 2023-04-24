@@ -11,6 +11,8 @@ public class CpuState {
 
 	public CpuState() {
 		this.registers = new int[Cpu.NUM_GENERAL_PURPOSE_REGS];
+		this.memoryBase = 0;
+		this.memoryLimit = Memory.MEMORY_SIZE;
 	}
 
 	public int getPc() {

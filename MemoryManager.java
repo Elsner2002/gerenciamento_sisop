@@ -26,7 +26,10 @@ public class MemoryManager {
 			}
 		}
 
-		int framesNeeded = Math.ceilDiv(words.length, Memory.FRAME_SIZE);
+		int framesNeeded = words.length/Memory.FRAME_SIZE;
+		if (words.length%Memory.FRAME_SIZE!=0){
+			framesNeeded++;
+		}
 
 		for (int framesLeft = framesNeeded; framesLeft > 0; framesLeft--) {
 			int frameIndex = framesNeeded - framesLeft;

@@ -11,6 +11,10 @@ public class ProcessManager {
 		this.processes = new HashMap<>();
 	}
 
+	public Map<Integer, Process> getMap(){
+		return processes;
+	}
+
 	// TODO: Improve
 	public void run(int id) {
 		this.processes.get(id).getPcb().setState(ProcessState.RUNNING);

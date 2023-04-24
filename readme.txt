@@ -26,6 +26,8 @@ Seção implementação:
 
 Seção de testes:
 
+Para executar o código, compile todos os *.java e execute "java OperatingSystem".
+
 Programas:
 - ”fac” para o código fatorial
 - ”factrap” para o código fatorialTRAP

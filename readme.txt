@@ -2,10 +2,10 @@ Bernardo Barzoto Zomer, Felipe Elsner da Silva, Lucas Marchesan Cunha
 
 Seção implementação:
 
-1.1 CPU: 
-- Nossa CPU é dividida em duas classes, o CPU e o CPUState. A CPU armazena as instruções e é responsável por executá-las (podendo ou não imprimir essa execução com base se o trace esta ativado ou não), assim como garantir que seu funcionamento ocorra sem problemas (checando por interrupções de erro durante a execução e pela interrupção que sinaliza o fim do programa). Já o CPUState guarda os seus registradores, incluindo o pc, o IR e os 8 registradores que ela usa.
+1.1 CPU:
+- Nossa CPU é dividida em duas classes, o CPU e o CPUState. A CPU armazena as instruções e é responsável por executá-las (podendo ou não imprimir essa execução com base se o trace esta ativado ou não), assim como garantir que seu funcionamento ocorra sem problemas (checando por interrupções de erro durante a execução e pela interrupção que sinaliza o fim do programa). Já o CPUState guarda os seus registradores, incluindo o pc, o IR e os 10 registradores que ela usa.
 
-1.2 Memoria:
+1.2 Memória:
 - A Memória está implementada na classe Memory, armazenando tanto os tamanhos da memória quanto dos frames, além da memória em si, uma matriz que possui como medidas o tamanho da memória/tamanho dos frames e o tamanho dos frames. Assim, já temos a memória salva como suas partições de frames, que serão usados para armazenar os processos usando o método de paginação.
 
 2.0 Programas:
@@ -26,7 +26,7 @@ Seção implementação:
 
 Seção de testes:
 
-Programas: 
+Programas:
 - ”fac” para o código fatorial
 - ”factrap” para o código fatorialTRAP
 - “min” para o código progMinimo
@@ -45,10 +45,8 @@ Comandos:
 - “trace” equivale aos comandos “traceOn e traceOff”, invertendo o valor atual da variável trace
 - “exit” equivale ao comando “exit”
 
-
-Nota: 
-- Ao executar esses códigos, fibTRAP, facTRAP e pc não funcionam
-- Não testamos se o endereco e valido
-- Quando roda um processo depois do outro as vezes da problema as vezes nao
-- Mudamos os codigos pois continham bugs e acessavam memoria nao alocada
-
+Notas:
+- O programa "pc" não executa corretamente
+- O código não testa se um endereço de memória é válido antes de fazer o endereçamento; ele sempre assume que o endereço é valido
+- O código nem sempre funciona quando há ou houve mais de um processo em memória
+- Os programas fornecidos foram alterados pois continham bugs, instruções que tentam acessar memória não alocada

@@ -2,7 +2,6 @@ public class Pcb {
 	private int id;
 	private int pc;
 	private ProcessState state;
-	private CpuState cpuState;
 	private int[] frames;
 
 	public Pcb(int id, int[] frames) {

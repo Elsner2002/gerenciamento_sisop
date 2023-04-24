@@ -8,8 +8,11 @@ public class OperatingSystem {
 
 	public static void main(String[] args) {
 		OperatingSystem.memory = new Memory();
-		OperatingSystem.cpu = new Cpu();
-		OperatingSystem.memoryManager = new MemoryManager(memory);
+		OperatingSystem.cpu = new Cpu(OperatingSystem.memory);
+
+		OperatingSystem.memoryManager = new MemoryManager(
+			OperatingSystem.memory
+		);
 
 		OperatingSystem.processManager = new ProcessManager(
 			OperatingSystem.memoryManager
@@ -127,8 +130,13 @@ public class OperatingSystem {
 
 	private static void run(String pid) {
 		// try {
-			OperatingSystem.processManager.run(Integer.parseInt(pid));
-			OperatingSystem.cpu.run();
+			int numPid = Integer.parseInt(pid);
+			OperatingSystem.processManager.run(numPid);
+
+			Process process = OperatingSystem.processManager
+				.getProcess(numPid);
+
+			OperatingSystem.cpu.run(process);
 		// } catch (Exception e) {
 		// 	System.out.println("run: invalid pid");
 		// }

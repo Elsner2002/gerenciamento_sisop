@@ -7,16 +7,17 @@ public class Cpu {
 	private InterruptHandler interruptHandler;
 	private SyscallHandler syscallHandler;
 	private boolean trace = false;
-	private Process processRunning;
 
-	public Cpu() {
+	public Cpu(Memory memory) {
 		this.state = new CpuState();
-		this.memory = new Memory();
+		this.memory = memory;
 		this.interruptHandler = new InterruptHandler();
 		this.syscallHandler = new SyscallHandler();
 	}
 
-	public void run() {
+	public void run(Process p) {
+		this.state.setFrames(p.getPcb().getFrames());
+
 		while (true) {
 			fetch();
 			execute();
@@ -29,19 +30,22 @@ public class Cpu {
 			return;
 		}
 
-		System.out.println(this.memory);
-		System.out.println(this.state);
-		System.out.println(this.state.getPc());
-
 		this.state.setIr(this.memory.get(this.state.getPc()));
 	}
 
 	private void execute() {
-		Word ir = this.state.getIr();
-		int r1 = this.state.getReg(ir.r1());
-		int r2 = this.state.getReg(ir.r2());
-		int param = this.state.getReg(ir.param());
+		Word ir = null;
+		int r1 = -1;
+		int r2 = -1;
+		int param = -1;
 		boolean jump = false;
+
+		try {
+			ir = this.state.getIr();
+			r1 = this.state.getReg(ir.r1());
+			r2 = this.state.getReg(ir.r2());
+			param = this.state.getReg(ir.param());
+		} catch (Exception e) { }
 
 		switch (this.state.getIr().opcode()) {
 			case ADD:
@@ -226,7 +230,7 @@ public class Cpu {
 	private int translateToPhysical(int virtual_addr) {
 		int page = virtual_addr / Memory.FRAME_SIZE;
 		int page_start = page * Memory.FRAME_SIZE;
-		int frame = this.state.getPages()[page];
+		int frame = this.state.getFrames()[page];
 		int frame_start = frame * Memory.FRAME_SIZE;
 		int offset = virtual_addr - page_start;
 		return frame_start + offset;
@@ -262,10 +266,5 @@ public class Cpu {
 
 	public void toggleTrace() {
 		this.trace = !this.trace;
-	}
-
-	public void run(Process p) {
-		processRunning = p;
-		processRunning.getPcb().setState(ProcessState.RUNNING);
 	}
 }

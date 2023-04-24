@@ -252,9 +252,13 @@ public class Cpu {
 		return false;
 	}
 
-	// TODO: Adapt to paging.
 	private boolean isLegalAddress(int addr) {
-		return true;
+		for(int f: state.getFrames()){
+			if(addr>f*Memory.FRAME_SIZE && addr<(f+1)*Memory.FRAME_SIZE-1){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean getTrace() {

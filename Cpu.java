@@ -6,6 +6,8 @@ public class Cpu {
 	private Memory memory;
 	private InterruptHandler interruptHandler;
 	private SyscallHandler syscallHandler;
+	private boolean trace = false;
+	private Process processRunning;
 
 	public Cpu() {
 		this.state = new CpuState();
@@ -245,5 +247,19 @@ public class Cpu {
 		}
 
 		return true;
+	}
+
+	public boolean getTrace() {
+		return this.trace;
+	}
+
+	public void toggleTrace() {
+		this.trace = !this.trace;
+	}
+
+	public void run(Process p) {
+		processRunning = p;
+		processRunning.getPcb().changeReady();
+		processRunning.getPcb().changeRunning();
 	}
 }

@@ -6,6 +6,7 @@ public class CpuState {
 	private int memoryBase;
 	private int memoryLimit;
 	private int[] pages;
+	private boolean running;
 	private boolean debugMode;
 
 	public CpuState() {
@@ -78,6 +79,14 @@ public class CpuState {
 
 	public void setPages(int[] pages) {
 		this.pages = pages;
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	public void stopProcess() {
+		running = false;
 	}
 
 	public boolean isDebugMode() {

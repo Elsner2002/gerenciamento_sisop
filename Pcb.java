@@ -22,4 +22,38 @@ public class Pcb {
 	public int[] getFrames() {
 		return this.frames;
 	}
+
+	public String getState() {
+		if(running){
+			return "Running";
+		} else if(ready) {
+			return "Ready";
+		} else {
+			return "Blocked";
+		}
+	}
+
+	public boolean isReady() {
+		return ready;
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	public void changeRunning(){
+		running = !running;
+	}
+
+	public void changeReady(){
+		ready = !ready;
+	}
+
+	public String toString(){
+		String content = "ID: "+ id + "\nPC: " + pc+ "\nState: " + getState()+ "\nFrames: ";
+		for(int frame: frames){
+			content+= frame + "\n";
+		}
+		return content;
+	}
 }

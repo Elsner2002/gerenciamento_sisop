@@ -36,31 +36,25 @@ public class Cpu {
 
 	private void execute() {
 		Word ir = this.state.getIr();
+		int r1Value = -1;
+		int r2Value = -1;
+		boolean jump = false;
+
+		if (ir.r1() >= 0 && ir.r1() < Cpu.NUM_GENERAL_PURPOSE_REGS) {
+			r1Value = this.state.getReg(ir.r1());
+		}
+
+		if (ir.r2() >= 0 && ir.r2() < Cpu.NUM_GENERAL_PURPOSE_REGS) {
+			r2Value = this.state.getReg(ir.r2());
+		}
 
 		if (trace) {
 			System.out.println(ir);
 		}
 
-		int r1 = -1;
-		int r2 = -1;
-		int param = -1;
-		boolean jump = false;
-
-		if (ir.r1() > 0 && ir.r1() < Cpu.NUM_GENERAL_PURPOSE_REGS) {
-			r1 = this.state.getReg(ir.r1());
-		}
-
-		if (ir.r2() > 0 && ir.r2() < Cpu.NUM_GENERAL_PURPOSE_REGS) {
-			r2 = this.state.getReg(ir.r2());
-		}
-
-		if (ir.param() > 0 && ir.param() < Cpu.NUM_GENERAL_PURPOSE_REGS) {
-			param = this.state.getReg(ir.param());
-		}
-
 		switch (this.state.getIr().opcode()) {
 			case ADD:
-				int sum = r1 + r2;
+				int sum = r1Value + r2Value;
 
 				if (!isOverflow(sum)) {
 					this.state.setReg(ir.r1(), sum);
@@ -68,7 +62,7 @@ public class Cpu {
 
 				break;
 			case ADDI:
-				int sumI = r1 + param;
+				int sumI = r1Value + ir.param();
 
 				if (!isOverflow(sumI)) {
 					this.state.setReg(ir.r1(), sumI);
@@ -76,112 +70,116 @@ public class Cpu {
 
 				break;
 			case JMP:
-				this.state.setPc(param);
+				this.state.setPc(ir.param());
 				jump = true;
 				break;
 			case JMPI:
-				this.state.setPc(r1);
+				this.state.setPc(r1Value);
 				jump = true;
 				break;
 			case JMPIE:
-				if (r2 == 0) {
-					this.state.setPc(r1);
+				if (r2Value == 0) {
+					this.state.setPc(r1Value);
 					jump = true;
 				}
 
 				break;
 			case JMPIEK:
-				if (ir.r2() == 0) {
-					this.state.setPc(param);
+				if (r2Value == 0) {
+					this.state.setPc(ir.param());
 					jump = true;
 				}
 
 				break;
 			case JMPIEM:
-				if (r2 == 0 && isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(param));
+				if (r2Value == 0 && isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
 					this.state.setPc(word.param());
+					jump = true;
 				}
 
 				break;
 			case JMPIG:
-				if (r2 > 0) {
-					this.state.setPc(r1);
+				if (r2Value > 0) {
+					this.state.setPc(r1Value);
 					jump = true;
 				}
 
 				break;
 			case JMPIGK:
-				if (r2 > 0) {
-					this.state.setPc(param);
+				if (r2Value > 0) {
+					this.state.setPc(ir.param());
 					jump = true;
 				}
 
 				break;
 			case JMPIGM:
-				if (r2 > 0 && isLegalAddress(ir.param())) {
+				if (r2Value > 0 && isLegalAddress(ir.param())) {
 					Word word = memory.get(translateToPhysical(ir.param()));
 					this.state.setPc(word.param());
+					jump = true;
 				}
 
 				break;
 			case JMPIGT:
-				if (r1 > r2) {
-					this.state.setPc(param);
+				if (r1Value > r2Value) {
+					this.state.setPc(ir.param());
 					jump = true;
 				}
 
 				break;
 			case JMPIL:
-				if (r2 < 0) {
-					this.state.setPc(r1);
+				if (r2Value < 0) {
+					this.state.setPc(r1Value);
 					jump = true;
 				}
 
 				break;
 			case JMPILK:
-				if (r2 < 0) {
-					this.state.setPc(param);
+				if (r2Value < 0) {
+					this.state.setPc(ir.param());
 					jump = true;
 				}
 
 				break;
 			case JMPILM:
-				if (r2 < 0 && isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(param));
+				if (r2Value < 0 && isLegalAddress(ir.param())) {
+					Word word = memory.get(translateToPhysical(ir.param()));
 					this.state.setPc(word.param());
+					jump = true;
 				}
 
 				break;
 			case JMPIM:
 				if (isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(param));
+					Word word = memory.get(translateToPhysical(ir.param()));
 					this.state.setPc(word.param());
+					jump = true;
 				}
 
 				break;
 			case LDD:
 				if (isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(param));
+					Word word = memory.get(translateToPhysical(ir.param()));
 					this.state.setReg(ir.r1(), word.param());
 				}
 
 				break;
 			case LDI:
-				this.state.setReg(ir.r1(), param);
+				this.state.setReg(ir.r1(), ir.param());
 				break;
 			case LDX:
-				if (isLegalAddress(ir.r2())) {
-					Word word = memory.get(translateToPhysical(r2));
+				if (isLegalAddress(r2Value)) {
+					Word word = memory.get(translateToPhysical(r2Value));
 					this.state.setReg(ir.r1(), word.param());
 				}
 
 				break;
 			case MOVE:
-				this.state.setReg(ir.r1(), r2);
+				this.state.setReg(ir.r1(), r2Value);
 				break;
 			case MULT:
-				int mult = r1 * r2;
+				int mult = r1Value * r2Value;
 
 				if (!isOverflow(mult)) {
 					this.state.setReg(ir.r1(), mult);
@@ -190,7 +188,7 @@ public class Cpu {
 				break;
 			case STD:
 				if (isLegalAddress(ir.param())) {
-					this.memory.set(translateToPhysical(ir.param()), r1);
+					this.memory.set(translateToPhysical(ir.param()), r1Value);
 				}
 
 				break;
@@ -198,20 +196,21 @@ public class Cpu {
 				this.state.setIrpt(Interrupt.STOP);
 				break;
 			case STX:
-				if (isLegalAddress(ir.r1())) {
-					this.memory.set(translateToPhysical(ir.r1()), ir.r2());
+				if (isLegalAddress(r1Value)) {
+					this.memory.set(translateToPhysical(r1Value), r2Value);
 				}
 
 				break;
 			case SUB:
-				int sub = r1 - r2;
+				int sub = r1Value - r2Value;
+
 				if (!isOverflow(sub)) {
 					this.state.setReg(ir.r1(), sub);
 				}
 
 				break;
 			case SUBI:
-				int subI = r1 + param;
+				int subI = r1Value + ir.param();
 
 				if (!isOverflow(subI)) {
 					this.state.setReg(ir.r1(), subI);

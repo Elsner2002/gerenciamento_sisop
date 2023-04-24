@@ -24,10 +24,15 @@ public class Memory {
 
 	public void set(int addr, int param) {
 		Word oldValue = this.get(addr);
+		Word newValue;
 
-		Word newValue = new Word(
-			Opcode.DATA, oldValue.r1(), oldValue.r2(), param
-		);
+		if (oldValue == null) {
+			newValue = new Word(Opcode.DATA, -1, -1, param);
+		} else {
+			newValue = new Word(
+				Opcode.DATA, oldValue.r1(), oldValue.r2(), param
+			);
+		}
 
 		this.set(addr, newValue);
 	}

@@ -1,6 +1,6 @@
 public class InterruptHandler {
     private ProcessManager processManager;
-
+	//lida com a interrupção passada se existir
     public InterruptHandler(ProcessManager processManager){
         this.processManager = processManager;
     }

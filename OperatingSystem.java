@@ -4,7 +4,7 @@ public class OperatingSystem {
 	private static Cpu cpu;
 	private static Memory memory;
 	private static ProcessManager processManager;
-
+	//inicia o programa
 	public static void main(String[] args) {
 		Memory memory = new Memory();
 		MemoryManager memoryManager = new MemoryManager(memory);
@@ -18,7 +18,7 @@ public class OperatingSystem {
 
 		run();
 	}
-
+	//executa as operações do SO
 	private static void run() {
 		Scanner in = new Scanner(System.in);
 
@@ -62,7 +62,7 @@ public class OperatingSystem {
 			}
 		}
 	}
-
+	//cria novo processo
 	private static void new_(String name) {
 		try {
 			OperatingSystem.processManager.createProcess(
@@ -72,7 +72,7 @@ public class OperatingSystem {
 			System.out.println("new: unknown program");
 		}
 	}
-
+	//desaloca processo existente pelo id
 	private static void kill(String pid) {
 		try {
 			OperatingSystem.processManager.killProcess(Integer.parseInt(pid));
@@ -80,7 +80,7 @@ public class OperatingSystem {
 			System.out.println("kill: pid must be a number");
 		}
 	}
-
+	//lista processos criados
 	private static void ps() {
 		System.out.println("id   state   name");
 		System.out.println("--   -----   ----");
@@ -92,7 +92,7 @@ public class OperatingSystem {
 			System.out.println(id + "   " + state + "   " + name);
 		}
 	}
-
+	//mostra informações do processo pelo id (tanto pcb quanto os frames que está)
 	private static void pdump(String pid) {
 		try {
 			Process process = OperatingSystem.processManager.getProcess(
@@ -105,7 +105,6 @@ public class OperatingSystem {
 			System.out.println("pdump: invalid pid");
 		}
 	}
-
 	private static void listFramesProcess(int[] range){
 		try {
 			for (int r: range) {
@@ -121,7 +120,7 @@ public class OperatingSystem {
 			System.out.println("pdump: address out of bounds");
 		}
 	}
-
+	//mostra o que está alocado na memória no intervalo passado
 	private static void mdump(String[] input) {
 		try {
 			int start = Integer.parseInt(input[1]);
@@ -141,7 +140,7 @@ public class OperatingSystem {
 			System.out.println("mdump: address out of bounds");
 		}
 	}
-
+	//executa processo pelo seu id
 	private static void run(String pid) {
 		try {
 			int numPid = Integer.parseInt(pid);
@@ -155,7 +154,7 @@ public class OperatingSystem {
 		 	System.out.println("run: invalid pid");
 		}
 	}
-
+	//liga/desliga o trace da execução pela CPU
 	private static void trace() {
 		OperatingSystem.cpu.toggleTrace();
 	}

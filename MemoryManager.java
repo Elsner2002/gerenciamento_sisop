@@ -2,7 +2,7 @@ public class MemoryManager {
 	private Memory memory;
 	private int numOccupiedFrames;
 	private boolean[] occupiedFrames;
-
+	//cria o gerenciador de memória
 	public MemoryManager(Memory memory) {
 		this.memory = memory;
 		this.numOccupiedFrames = 0;
@@ -12,7 +12,7 @@ public class MemoryManager {
 	public int getNumOccupiedFrames() {
 		return numOccupiedFrames;
 	}
-
+	//coloca o conteudo do processo na memoria
 	public boolean fillFrames(int[] frames, Word[] words) {
 		if (words.length > frames.length * Memory.FRAME_SIZE) {
 			return false;
@@ -50,6 +50,7 @@ public class MemoryManager {
 		return true;
 	}
 
+	//aloca espaço na memória
 	public int[] allocate(int framesNeeded) {
 		if (
 			framesNeeded > Memory.FRAME_AMOUNT - this.getNumOccupiedFrames()
@@ -75,7 +76,7 @@ public class MemoryManager {
 
 		return allocatedFrames;
 	}
-
+	//desaloca espaço na memória
 	public void desallocate(int[] frames) {
 		for (int frame : frames) {
 			this.occupiedFrames[frame] = false;

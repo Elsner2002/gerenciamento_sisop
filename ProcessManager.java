@@ -1,6 +1,6 @@
 import java.util.Map;
 import java.util.HashMap;
-
+//cria o gerenciador de processos
 public class ProcessManager {
 	private int nextId = 0;
 	private MemoryManager memoryManager;
@@ -14,11 +14,11 @@ public class ProcessManager {
 	public Map<Integer, Process> getMap(){
 		return processes;
 	}
-
+	//roda o processo
 	public void run(int id) {
 		this.processes.get(id).getPcb().setState(ProcessState.RUNNING);
 	}
-
+	//pega o processo
 	public Process getProcess(int id){
 		return processes.get(id);
 	}
@@ -28,7 +28,7 @@ public class ProcessManager {
 			this.processes.values().size()
 		]);
 	}
-
+	//cria o processo
 	public int createProcess(Word[] words) {
 		int framesNeeded = (words.length / Memory.FRAME_SIZE) + 1;
 		int[] frames = this.memoryManager.allocate(framesNeeded);
@@ -49,13 +49,13 @@ public class ProcessManager {
 		this.processes.put(pcb.getId(), process);
 		return process.getPcb().getId();
 	}
-
+	//desaloca o processo pelo id
 	public void killProcess(int pid) {
 		Process process = this.processes.get(pid);
 		this.memoryManager.desallocate(process.getPcb().getFrames());
 		this.processes.remove(pid);
 	}
-
+	//cria o processo rodando
 	public void killRunning() {
 		for (int p: processes.keySet()){
 			if (processes.get(p).getPcb().getState() == ProcessState.RUNNING) {

@@ -12,7 +12,7 @@ public class Cpu {
 		this.memory = memory;
 		this.interruptHandler = interruptHandler;
 	}
-
+	//executa o processo passado
 	public void run(Process p) {
 		this.state.setFrames(p.getPcb().getFrames());
 
@@ -25,7 +25,7 @@ public class Cpu {
 			}
 		}
 	}
-
+	//verifica se a instrução do processo tem um endereço válido
 	private void fetch() {
 		if (!isLegalAddress(this.state.getPc())) {
 			return;
@@ -33,7 +33,7 @@ public class Cpu {
 
 		this.state.setIr(this.memory.get(this.state.getPc()));
 	}
-
+	//executa a instrução
 	private void execute() {
 		Word ir = this.state.getIr();
 		int r1Value = -1;
@@ -229,11 +229,11 @@ public class Cpu {
 			this.state.incPc();
 		}
 	}
-
+	//pega a interrupção (se ocorrer) para parar ou continuar o programa
 	private boolean interrupt() {
 		return interruptHandler.handle(this.state);
 	}
-
+	//traduz o endereço lógico para físico
 	private int translateToPhysical(int virtual_addr) {
 		int page = virtual_addr / Memory.FRAME_SIZE;
 		int page_start = page * Memory.FRAME_SIZE;
@@ -242,7 +242,7 @@ public class Cpu {
 		int offset = virtual_addr - page_start;
 		return frame_start + offset;
 	}
-
+	//verifica se o valor da overflow
 	private boolean isOverflow(int v) {
 		if (v < Cpu.MIN_INT || v > Cpu.MAX_INT) {
 			this.state.setIrpt(Interrupt.OVERFLOW);
@@ -251,7 +251,7 @@ public class Cpu {
 
 		return false;
 	}
-
+	//verifica se o endereço é válido para a memória utilizada pelo programa
 	private boolean isLegalAddress(int addr) {
 		for(int f: state.getFrames()){
 			if(addr>f*Memory.FRAME_SIZE && addr<(f+1)*Memory.FRAME_SIZE-1){
@@ -264,7 +264,7 @@ public class Cpu {
 	public boolean getTrace() {
 		return this.trace;
 	}
-
+	//troca o estado do trace (liga/desliga a impressão das instruções)
 	public void toggleTrace() {
 		this.trace = !this.trace;
 	}

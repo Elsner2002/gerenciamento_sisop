@@ -1,4 +1,5 @@
 public class CpuState {
+	//classe passa o estado da CPU e as suas informações
 	private int pc;
 	private Word ir;
 	private int[] registers;

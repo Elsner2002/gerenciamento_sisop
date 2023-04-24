@@ -1,5 +1,5 @@
 import java.util.Scanner;
-
+//lida com as chamadas de sistema de I/O que o programa solicita 
 public class SyscallHandler {
 	public static void handle(CpuState cpuState) {
         if (cpuState.getReg(8) == 1) {

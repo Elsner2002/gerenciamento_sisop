@@ -4,7 +4,7 @@ class Programs {
 	public static final Word[] get(String name) {
 		return Programs.programs.get(name);
 	}
-
+	//instancia os programas que a CPU pode executar
 	public static String getName(Word[] words){
 		return Programs.programs.entrySet()
 			.stream()
@@ -230,7 +230,7 @@ class Programs {
 		new Word(Opcode.DATA, -1, -1, -1),
 		new Word(Opcode.DATA, -1, -1, -1),
 		new Word(Opcode.DATA, -1, -1, -1)};
-
+		//cria um dicionario com o programa (como valor) e seu nome (como chave)
 	private static final Map<String, Word[]> programs = Map.ofEntries(
 		Map.entry("fac", fatorial),
 		Map.entry("factrap", fatorialTRAP),

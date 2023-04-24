@@ -3,7 +3,7 @@ public class Pcb {
 	private int pc;
 	private ProcessState state;
 	private int[] frames;
-
+	//instancia o PCB de um programa
 	public Pcb(int id, int[] frames) {
 		this.id = id;
 		this.frames = frames;

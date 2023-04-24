@@ -1,3 +1,4 @@
+//lista de comandos
 public enum Opcode {
 	ADD,
 	ADDI,

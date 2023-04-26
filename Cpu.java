@@ -19,6 +19,7 @@ public class Cpu {
 	}
 	//executa o processo passado
 	public void run(Process p) {
+		this.state = new CpuState();
 		this.state.setFrames(p.getPcb().getFrames());
 
 		while (true) {

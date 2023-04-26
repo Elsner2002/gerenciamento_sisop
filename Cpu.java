@@ -37,7 +37,9 @@ public class Cpu {
 			return;
 		}
 
-		this.state.setIr(this.memory.get(this.state.getPc()));
+		this.state.setIr(this.memory.get(this.translateToPhysical(
+			this.state.getPc()
+		)));
 	}
 	//executa a instrução
 	private void execute() {

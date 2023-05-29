@@ -2,11 +2,13 @@ public class Cpu {
 	public static final int NUM_GENERAL_PURPOSE_REGS = 10;
 	public static final int MIN_INT = -32767;
 	public static final int MAX_INT = 32767;
+	public static final int QUANTUM = 10;
 	private CpuState state;
 	private Memory memory;
 	private boolean trace = false;
 	private InterruptHandler interruptHandler;
 	private SyscallHandler syscallHandler;
+	private int clk;
 
 	public Cpu(
 		Memory memory, InterruptHandler interruptHandler,
@@ -23,10 +25,15 @@ public class Cpu {
 		this.state.setFrames(p.getPcb().getFrames());
 
 		while (true) {
+			this.clk++;
 			fetch();
 			execute();
 
-			if (interrupt()) {
+			if (this.clk % Cpu.QUANTUM == 0) {
+				this.state.setIrpt(Interrupt.TIMEOUT);
+			}
+
+			if (interrupt(p)) {
 				break;
 			}
 		}
@@ -238,8 +245,8 @@ public class Cpu {
 		}
 	}
 	//pega a interrupção (se ocorrer) para parar ou continuar o programa
-	private boolean interrupt() {
-		return interruptHandler.handle(this.state);
+	private boolean interrupt(Process p) {
+		return interruptHandler.handle(p, this.state);
 	}
 	//traduz o endereço lógico para físico
 	private int translateToPhysical(int virtual_addr) {

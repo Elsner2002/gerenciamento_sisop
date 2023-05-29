@@ -5,19 +5,27 @@ public class InterruptHandler {
         this.processManager = processManager;
     }
 
-	public boolean handle(CpuState cpuState) {
+	public boolean handle(Process p, CpuState cpuState) {
 		Interrupt irpt = cpuState.getIrpt();
+		cpuState.setIrpt(null);
 
 		if (irpt == null) {
 			return false;
 		}
 
-		if (irpt != Interrupt.STOP) {
-			System.out.println("error: " + cpuState.getIrpt());
+		if (irpt == Interrupt.TIMEOUT) {
+			p.getPcb().setState(ProcessState.READY);
+			p.getPcb().setCpuState(cpuState);
+			processManager.reschedule();
+			return true;
 		}
 
-		processManager.killRunning();
-		cpuState.setIrpt(null);
+		if (irpt == Interrupt.STOP) {
+			processManager.killRunning();
+			return true;
+		}
+
+		System.out.println("error: " + cpuState.getIrpt());
 		return true;
 	}
 }

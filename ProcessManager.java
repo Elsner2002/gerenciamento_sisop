@@ -8,6 +8,7 @@ import java.util.Queue;
 public class ProcessManager {
 	private int nextId = 0;
 	private int runningId = -1;
+	private Cpu cpu;
 	private MemoryManager memoryManager;
 	private Map<Integer, Process> processes;
 	private Queue<Integer> idQueue;
@@ -18,13 +19,27 @@ public class ProcessManager {
 		this.idQueue = new PriorityQueue<>();
 	}
 
+	public void setCpu(Cpu cpu) {
+		if (this.cpu != null) {
+			throw new IllegalStateException("CPU is already defined");
+		}
+
+		this.cpu = cpu;
+	}
+
 	public Map<Integer, Process> getMap(){
 		return processes;
 	}
 	//roda o processo
 	public void run(int id) {
-		this.processes.get(id).getPcb().setState(ProcessState.RUNNING);
+		if (this.cpu == null) {
+			throw new IllegalStateException("No reference to CPU");
+		}
+
+		Process next = this.processes.get(id);
+		next.getPcb().setState(ProcessState.RUNNING);
 		this.runningId = id;
+		this.cpu.run(next.getPcb().getCpuState());
 	}
 	//pega o processo
 	public Process getProcess(int id){
@@ -61,18 +76,24 @@ public class ProcessManager {
 	}
 
 	public void reschedule() {
+		System.out.println("Rescheduling...");
+		Process runningProcess = this.processes.get(this.runningId);
+		runningProcess.get(this.runningId).setState(ProcessState.READY);
+		runningProcess.getPcb().setCpuState(this.cpu.getState());
 		int nextIdToRun = -1;
 
 		while (true) {
+			System.out.println("queue:" + this.idQueue);
 			try {
 				nextIdToRun = this.idQueue.remove();
 			} catch (NoSuchElementException e) {
+				System.out.println("List is empty...");
 				return;
 			}
 
 			Process nextP = this.processes.get(nextIdToRun);
 
-			if (nextP != null) {
+			if (nextP == null) {
 				continue;
 			}
 

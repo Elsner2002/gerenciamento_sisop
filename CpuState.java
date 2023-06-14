@@ -54,14 +54,6 @@ public class CpuState {
 		this.irpt = irpt;
 	}
 
-	public int[] getFrames() {
-		return frames;
-	}
-
-	public void setFrames(int[] frames) {
-		this.frames = frames;
-	}
-
 	public boolean isDebugMode() {
 		return debugMode;
 	}

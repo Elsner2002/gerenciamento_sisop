@@ -14,8 +14,7 @@ public class InterruptHandler {
 		}
 
 		if (irpt == Interrupt.TIMEOUT) {
-			p.getPcb().setState(ProcessState.READY);
-			p.getPcb().setCpuState(cpuState);
+			System.out.println("Timeout!");
 			processManager.reschedule();
 			return true;
 		}

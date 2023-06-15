@@ -14,15 +14,29 @@ public class Cpu {
 		Memory memory, InterruptHandler interruptHandler,
 		SyscallHandler syscallHandler
 	) {
-		this.state = new CpuState();
 		this.memory = memory;
 		this.interruptHandler = interruptHandler;
 		this.syscallHandler = syscallHandler;
 	}
+
+	public static int translateToPhysical(
+		CpuState cpuState, int virtual_addr
+	) {
+		int page = virtual_addr / Memory.FRAME_SIZE;
+		int page_start = page * Memory.FRAME_SIZE;
+		int frame = cpuState.getFrames()[page];
+		int frame_start = frame * Memory.FRAME_SIZE;
+		int offset = virtual_addr - page_start;
+		return frame_start + offset;
+	}
+
+	public CpuState getState() {
+		return this.state;
+	}
+
 	//executa o processo passado
-	public void run(Process p) {
-		this.state = new CpuState();
-		this.state.setFrames(p.getPcb().getFrames());
+	public void run(CpuState newState) {
+		this.state = newState;
 
 		while (true) {
 			this.clk++;
@@ -33,7 +47,7 @@ public class Cpu {
 				this.state.setIrpt(Interrupt.TIMEOUT);
 			}
 
-			if (interrupt(p)) {
+			if (interrupt()) {
 				break;
 			}
 		}
@@ -44,8 +58,8 @@ public class Cpu {
 			return;
 		}
 
-		this.state.setIr(this.memory.get(this.translateToPhysical(
-			this.state.getPc()
+		this.state.setIr(this.memory.get(Cpu.translateToPhysical(
+			this.state, this.state.getPc()
 		)));
 	}
 	//executa a instrução
@@ -108,7 +122,10 @@ public class Cpu {
 				break;
 			case JMPIEM:
 				if (r2Value == 0 && isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(
+						Cpu.translateToPhysical(this.state, ir.param())
+					);
+
 					this.state.setPc(word.param());
 					jump = true;
 				}
@@ -130,7 +147,10 @@ public class Cpu {
 				break;
 			case JMPIGM:
 				if (r2Value > 0 && isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(
+						Cpu.translateToPhysical(this.state, ir.param())
+					);
+
 					this.state.setPc(word.param());
 					jump = true;
 				}
@@ -159,7 +179,10 @@ public class Cpu {
 				break;
 			case JMPILM:
 				if (r2Value < 0 && isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(
+						Cpu.translateToPhysical(this.state, ir.param())
+					);
+
 					this.state.setPc(word.param());
 					jump = true;
 				}
@@ -167,7 +190,10 @@ public class Cpu {
 				break;
 			case JMPIM:
 				if (isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(
+						Cpu.translateToPhysical(this.state, ir.param())
+					);
+
 					this.state.setPc(word.param());
 					jump = true;
 				}
@@ -175,7 +201,10 @@ public class Cpu {
 				break;
 			case LDD:
 				if (isLegalAddress(ir.param())) {
-					Word word = memory.get(translateToPhysical(ir.param()));
+					Word word = memory.get(
+						Cpu.translateToPhysical(this.state, ir.param())
+					);
+
 					this.state.setReg(ir.r1(), word.param());
 				}
 
@@ -185,7 +214,10 @@ public class Cpu {
 				break;
 			case LDX:
 				if (isLegalAddress(r2Value)) {
-					Word word = memory.get(translateToPhysical(r2Value));
+					Word word = memory.get(Cpu.translateToPhysical(
+						this.state, r2Value
+					));
+
 					this.state.setReg(ir.r1(), word.param());
 				}
 
@@ -203,7 +235,10 @@ public class Cpu {
 				break;
 			case STD:
 				if (isLegalAddress(ir.param())) {
-					this.memory.set(translateToPhysical(ir.param()), r1Value);
+					this.memory.set(
+						Cpu.translateToPhysical(this.state, ir.param()),
+						r1Value
+					);
 				}
 
 				break;
@@ -212,7 +247,9 @@ public class Cpu {
 				break;
 			case STX:
 				if (isLegalAddress(r1Value)) {
-					this.memory.set(translateToPhysical(r1Value), r2Value);
+					this.memory.set(
+						Cpu.translateToPhysical(this.state, r1Value), r2Value
+					);
 				}
 
 				break;
@@ -245,18 +282,10 @@ public class Cpu {
 		}
 	}
 	//pega a interrupção (se ocorrer) para parar ou continuar o programa
-	private boolean interrupt(Process p) {
-		return interruptHandler.handle(p, this.state);
+	private boolean interrupt() {
+		return interruptHandler.handle(this.state);
 	}
-	//traduz o endereço lógico para físico
-	private int translateToPhysical(int virtual_addr) {
-		int page = virtual_addr / Memory.FRAME_SIZE;
-		int page_start = page * Memory.FRAME_SIZE;
-		int frame = this.state.getFrames()[page];
-		int frame_start = frame * Memory.FRAME_SIZE;
-		int offset = virtual_addr - page_start;
-		return frame_start + offset;
-	}
+
 	//verifica se o valor da overflow
 	private boolean isOverflow(int v) {
 		if (v < Cpu.MIN_INT || v > Cpu.MAX_INT) {
@@ -277,5 +306,9 @@ public class Cpu {
 	//troca o estado do trace (liga/desliga a impressão das instruções)
 	public void toggleTrace() {
 		this.trace = !this.trace;
+	}
+
+	private void setState(CpuState state) {
+		this.state = state;
 	}
 }

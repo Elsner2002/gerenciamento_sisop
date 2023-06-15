@@ -44,8 +44,8 @@ public class OperatingSystem {
 				case "mdump":
 					OperatingSystem.mdump(input);
 					break;
-				case "run":
-					OperatingSystem.run(input[1]);
+				case "runall":
+					OperatingSystem.runAll();
 					break;
 				case "trace":
 					OperatingSystem.trace();
@@ -102,7 +102,7 @@ public class OperatingSystem {
 			);
 
 			System.out.println(process.getPcb());
-			listFramesProcess(process.getPcb().getFrames());
+			listFramesProcess(process.getPcb().getCpuState().getFrames());
 		}catch (Exception e) {
 			System.out.println("pdump: invalid pid");
 		}
@@ -143,13 +143,8 @@ public class OperatingSystem {
 		}
 	}
 	//executa processo pelo seu id
-	private static void run(String pid) {
-		// try {
-			int numPid = Integer.parseInt(pid);
-			OperatingSystem.processManager.run(numPid);
-		// } catch (Exception e) {
-		//  	System.out.println("run: invalid pid");
-		// }
+	private static void runAll() {
+		OperatingSystem.processManager.runAll();
 	}
 	//liga/desliga o trace da execução pela CPU
 	private static void trace() {

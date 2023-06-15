@@ -15,7 +15,7 @@ public class SyscallHandler {
             int addr = cpuState.getReg(9);
 
 			this.memory.set(
-				addr, this.translateToPhysical(cpuState, userInput)
+				addr, Cpu.translateToPhysical(cpuState, userInput)
 			);
         } else if (cpuState.getReg(8) == 2) {
             int elementR9 = cpuState.getReg(9);

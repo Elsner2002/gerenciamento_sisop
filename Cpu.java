@@ -14,7 +14,6 @@ public class Cpu {
 		Memory memory, InterruptHandler interruptHandler,
 		SyscallHandler syscallHandler
 	) {
-		this.state = new CpuState();
 		this.memory = memory;
 		this.interruptHandler = interruptHandler;
 		this.syscallHandler = syscallHandler;
@@ -31,10 +30,13 @@ public class Cpu {
 		return frame_start + offset;
 	}
 
+	public CpuState getState() {
+		return this.state;
+	}
+
 	//executa o processo passado
 	public void run(CpuState newState) {
-		System.out.println("Running!");
-		this.setCpuState(newState);
+		this.state = newState;
 
 		while (true) {
 			this.clk++;
@@ -246,7 +248,7 @@ public class Cpu {
 			case STX:
 				if (isLegalAddress(r1Value)) {
 					this.memory.set(
-						Cpu.translateToPhysical(this.sate, r1Value), r2Value
+						Cpu.translateToPhysical(this.state, r1Value), r2Value
 					);
 				}
 

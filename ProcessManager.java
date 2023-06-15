@@ -1,7 +1,7 @@
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.PriorityQueue;
 import java.util.Queue;
 
 //cria o gerenciador de processos
@@ -16,7 +16,7 @@ public class ProcessManager {
 	public ProcessManager(MemoryManager memoryManager) {
 		this.memoryManager = memoryManager;
 		this.processes = new HashMap<>();
-		this.idQueue = new PriorityQueue<>();
+		this.idQueue = new LinkedList<>();
 	}
 
 	public void setCpu(Cpu cpu) {
@@ -30,6 +30,13 @@ public class ProcessManager {
 	public Map<Integer, Process> getMap(){
 		return processes;
 	}
+
+	public void runAll() {
+		this.runningId = this.idQueue.remove();
+		this.idQueue.add(this.runningId);
+		this.run(this.runningId);
+	}
+
 	//roda o processo
 	public void run(int id) {
 		if (this.cpu == null) {
@@ -60,14 +67,13 @@ public class ProcessManager {
 			return -1;
 		}
 
-		Pcb pcb = new Pcb(this.nextId, frames);
-		this.nextId += 1;
 		boolean filled = this.memoryManager.fillFrames(frames, words);
 
 		if (!filled) {
 			return -1;
 		}
 
+		Pcb pcb = new Pcb(this.nextId++, frames);
 		Process process = new Process(pcb, words);
 		int id = pcb.getId();
 		this.processes.put(id, process);
@@ -76,18 +82,19 @@ public class ProcessManager {
 	}
 
 	public void reschedule() {
-		System.out.println("Rescheduling...");
 		Process runningProcess = this.processes.get(this.runningId);
-		runningProcess.get(this.runningId).setState(ProcessState.READY);
-		runningProcess.getPcb().setCpuState(this.cpu.getState());
+
+		if (runningProcess != null) {
+			runningProcess.getPcb().setState(ProcessState.READY);
+			runningProcess.getPcb().setCpuState(this.cpu.getState());
+		}
+
 		int nextIdToRun = -1;
 
 		while (true) {
-			System.out.println("queue:" + this.idQueue);
 			try {
 				nextIdToRun = this.idQueue.remove();
 			} catch (NoSuchElementException e) {
-				System.out.println("List is empty...");
 				return;
 			}
 
@@ -97,12 +104,11 @@ public class ProcessManager {
 				continue;
 			}
 
-			if (nextP.getPcb().getState() != ProcessState.READY) {
-				this.idQueue.add(nextIdToRun);
-				continue;
-			}
+			this.idQueue.add(nextIdToRun);
 
-			break;
+			if (nextP.getPcb().getState() == ProcessState.READY) {
+				break;
+			}
 		}
 
 		this.run(nextIdToRun);
@@ -111,6 +117,7 @@ public class ProcessManager {
 	//cria o processo rodando
 	public void killRunning() {
 		this.killProcess(this.runningId);
+		this.reschedule();
 	}
 
 	//desaloca o processo pelo id
@@ -120,7 +127,11 @@ public class ProcessManager {
 		}
 
 		Process process = this.processes.get(pid);
-		this.memoryManager.desallocate(process.getPcb().getFrames());
+
+		this.memoryManager.desallocate(
+			process.getPcb().getCpuState().getFrames()
+		);
+
 		this.processes.remove(pid);
 	}
 }

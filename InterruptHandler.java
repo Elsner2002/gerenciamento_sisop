@@ -5,7 +5,7 @@ public class InterruptHandler {
         this.processManager = processManager;
     }
 
-	public boolean handle(Process p, CpuState cpuState) {
+	public boolean handle(CpuState cpuState) {
 		Interrupt irpt = cpuState.getIrpt();
 		cpuState.setIrpt(null);
 
@@ -14,7 +14,6 @@ public class InterruptHandler {
 		}
 
 		if (irpt == Interrupt.TIMEOUT) {
-			System.out.println("Timeout!");
 			processManager.reschedule();
 			return true;
 		}

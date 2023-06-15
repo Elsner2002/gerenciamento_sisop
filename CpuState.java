@@ -7,8 +7,9 @@ public class CpuState {
 	private int[] frames;
 	private boolean debugMode;
 
-	public CpuState() {
+	public CpuState(int[] frames) {
 		this.registers = new int[Cpu.NUM_GENERAL_PURPOSE_REGS];
+		this.frames = frames;
 	}
 
 	public int getPc() {
@@ -52,6 +53,14 @@ public class CpuState {
 	}
 	public void setIrpt(Interrupt irpt) {
 		this.irpt = irpt;
+	}
+
+	public int[] getFrames() {
+		return this.frames;
+	}
+
+	public void setFrames(int[] frames) {
+		this.frames = frames;
 	}
 
 	public boolean isDebugMode() {

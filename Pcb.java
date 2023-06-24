@@ -1,25 +1,16 @@
 public class Pcb {
 	private int id;
-	private int pc;
 	private ProcessState state;
-	private int[] frames;
+	private CpuState cpuState;
 	//instancia o PCB de um programa
 	public Pcb(int id, int[] frames) {
 		this.id = id;
-		this.frames = frames;
 		this.state = ProcessState.READY;
+		this.cpuState = new CpuState(frames);
 	}
 
 	public int getId() {
 		return this.id;
-	}
-
-	public int getPc() {
-		return this.pc;
-	}
-
-	public int[] getFrames() {
-		return this.frames;
 	}
 
 	public ProcessState getState() {
@@ -30,11 +21,21 @@ public class Pcb {
 		this.state = state;
 	}
 
+	public CpuState getCpuState() {
+		return this.cpuState;
+	}
+
+	public void setCpuState(CpuState cpuState) {
+		this.cpuState = cpuState;
+	}
+
 	public String toString(){
-		String content = "id: " + id + "\npc: " + pc + "\nstate: " + getState()
+		String content =
+			"id: " + id
+			+ "\nstate: " + getState()
 			+ "\nframes: ";
 
-		for(int frame: frames) {
+		for(int frame: this.getCpuState().getFrames()) {
 			content += frame + " ";
 		}
 

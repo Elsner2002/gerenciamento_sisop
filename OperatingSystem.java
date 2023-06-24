@@ -12,15 +12,16 @@ public class OperatingSystem {
 		InterruptHandler interruptHandler = new InterruptHandler(processManager);
 		SyscallHandler syscallHandler = new SyscallHandler(memory);
 		Cpu cpu = new Cpu(memory, interruptHandler, syscallHandler);
+		processManager.setCpu(cpu);
 
 		OperatingSystem.cpu = cpu;
 		OperatingSystem.memory = memory;
 		OperatingSystem.processManager = processManager;
 
-		run();
+		prompt();
 	}
 	//executa as operações do SO
-	private static void run() {
+	private static void prompt() {
 		Scanner in = new Scanner(System.in);
 
 		while (true) {
@@ -43,8 +44,8 @@ public class OperatingSystem {
 				case "mdump":
 					OperatingSystem.mdump(input);
 					break;
-				case "run":
-					OperatingSystem.run(input[1]);
+				case "runall":
+					OperatingSystem.runAll();
 					break;
 				case "trace":
 					OperatingSystem.trace();
@@ -101,7 +102,7 @@ public class OperatingSystem {
 			);
 
 			System.out.println(process.getPcb());
-			listFramesProcess(process.getPcb().getFrames());
+			listFramesProcess(process.getPcb().getCpuState().getFrames());
 		}catch (Exception e) {
 			System.out.println("pdump: invalid pid");
 		}
@@ -142,18 +143,8 @@ public class OperatingSystem {
 		}
 	}
 	//executa processo pelo seu id
-	private static void run(String pid) {
-		try {
-			int numPid = Integer.parseInt(pid);
-			OperatingSystem.processManager.run(numPid);
-
-			Process process = OperatingSystem.processManager
-				.getProcess(numPid);
-
-			OperatingSystem.cpu.run(process);
-		} catch (Exception e) {
-		 	System.out.println("run: invalid pid");
-		}
+	private static void runAll() {
+		OperatingSystem.processManager.runAll();
 	}
 	//liga/desliga o trace da execução pela CPU
 	private static void trace() {

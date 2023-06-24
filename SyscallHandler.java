@@ -1,23 +1,24 @@
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Scanner;
 
 public class SyscallHandler extends Thread {
-	private BlockingQueue<CpuState> queue;
 	private Memory memory;
 	private InterruptHandler interruptHandler;
+	private SyscallQueue syscallQueue;
 
-	public SyscallHandler(Memory memory, InterruptHandler interruptHandler) {
-		this.queue = new LinkedBlockingQueue<>();
+	public SyscallHandler(
+		Memory memory, InterruptHandler interruptHandler,
+		SyscallQueue syscallQueue
+	) {
 		this.memory = memory;
 		this.interruptHandler = interruptHandler;
+		this.syscallQueue = syscallQueue;
 	}
 
 	@Override
 	public void run() {
 		while (true) {
 			try {
-				CpuState irptState = this.queue.take();
+				CpuState irptState = this.syscallQueue.take();
 				handle(irptState);
 				irptState.setIrpt(Interrupt.UNBLOCK);
 				interruptHandler.handle(irptState);
@@ -29,10 +30,6 @@ public class SyscallHandler extends Thread {
 				return;
 			}
 		}
-	}
-
-	public void queueRequest(CpuState cpuState) {
-		this.queue.add(cpuState);
 	}
 
 	private void handle(CpuState cpuState) {

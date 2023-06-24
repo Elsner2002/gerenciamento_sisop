@@ -11,11 +11,15 @@ public class ProcessManager {
 	private MemoryManager memoryManager;
 	private Map<Integer, Process> processes;
 	private Queue<Integer> idQueue;
+	private NextCpuState nextCpuState;
 
-	public ProcessManager(MemoryManager memoryManager) {
+	public ProcessManager(
+		MemoryManager memoryManager, NextCpuState nextCpuState
+	) {
 		this.memoryManager = memoryManager;
 		this.processes = new HashMap<>();
 		this.idQueue = new LinkedList<>();
+		this.nextCpuState = nextCpuState;
 	}
 
 	public void runAll() {
@@ -32,7 +36,7 @@ public class ProcessManager {
 		Process next = this.processes.get(id);
 		next.getPcb().setState(ProcessState.RUNNING);
 		this.runningId = id;
-		this.cpu.runProcess(next.getPcb().getCpuState());
+		this.nextCpuState.set(next.getPcb().getCpuState());
 	}
 
 	public int createProcess(Word[] words) {

@@ -4,20 +4,21 @@ public class Cpu extends Thread {
 	public static final int MAX_INT = 32767;
 	public static final int QUANTUM = 10;
 	private CpuState state;
-	private CpuState nextState;
+	private int clk;
 	private Memory memory;
 	private boolean trace = false;
 	private InterruptHandler interruptHandler;
-	private SyscallHandler syscallHandler;
-	private int clk;
+	private NextCpuState nextCpuState;
+	private SyscallQueue syscallQueue;
 
 	public Cpu(
 		Memory memory, InterruptHandler interruptHandler,
-		SyscallHandler syscallHandler
+		NextCpuState nextCpuState, SyscallQueue syscallQueue
 	) {
 		this.memory = memory;
 		this.interruptHandler = interruptHandler;
-		this.syscallHandler = syscallHandler;
+		this.nextCpuState = nextCpuState;
+		this.syscallQueue = syscallQueue;
 	}
 
 	public static int translateToPhysical(
@@ -34,19 +35,23 @@ public class Cpu extends Thread {
 	@Override
 	public void run() {
 		while (true) {
-			if (this.nextState == null) {
+			CpuState nextState = this.nextCpuState.get();
+
+			if (nextState == null) {
 				continue;
 			}
 
-			this.state = this.nextState;
-			this.nextState = null;
+			this.state = nextState;
 
 			while (true) {
 				this.clk++;
 				fetch();
 				execute();
 
-				if (this.clk % Cpu.QUANTUM == 0) {
+				if (
+					this.state.getIrpt() == null &&
+					this.clk % Cpu.QUANTUM == 0
+				) {
 					this.state.setIrpt(Interrupt.TIMEOUT);
 				}
 
@@ -55,10 +60,6 @@ public class Cpu extends Thread {
 				}
 			}
 		}
-	}
-
-	public void runProcess(CpuState nextState) {
-		this.nextState = nextState;
 	}
 
 	public CpuState getCpuState() {
@@ -292,7 +293,7 @@ public class Cpu extends Thread {
 			case TRAP:
 				this.state.setIrpt(Interrupt.BLOCK);
 				handleInterruption();
-				this.syscallHandler.queueRequest(this.state);
+				this.syscallQueue.add(this.state);
 				break;
 			default:
 				this.state.setIrpt(Interrupt.INVALID_INSTRUCTION);
@@ -305,6 +306,10 @@ public class Cpu extends Thread {
 	}
 
 	private boolean handleInterruption() {
+		if (this.state.getIrpt() != null) {
+			System.out.println("IRPT:" + this.state.getIrpt());
+		}
+
 		return interruptHandler.handle(this.state);
 	}
 

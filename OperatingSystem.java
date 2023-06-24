@@ -8,18 +8,23 @@ public class OperatingSystem {
 	public static void main(String[] args) {
 		OperatingSystem.memory = new Memory();
 		MemoryManager memoryManager = new MemoryManager(memory);
-		OperatingSystem.processManager = new ProcessManager(memoryManager);
+		NextCpuState nextCpuState = new NextCpuState();
+		SyscallQueue syscallQueue = new SyscallQueue();
+
+		OperatingSystem.processManager = new ProcessManager(
+			memoryManager, nextCpuState
+		);
 
 		InterruptHandler interruptHandler = new InterruptHandler(
 			processManager
 		);
 
 		SyscallHandler syscallHandler = new SyscallHandler(
-			memory, interruptHandler
+			memory, interruptHandler, syscallQueue
 		);
 
 		OperatingSystem.cpu = new Cpu(
-			memory, interruptHandler, syscallHandler
+			memory, interruptHandler, nextCpuState, syscallQueue
 		);
 
 		processManager.setCpu(cpu);

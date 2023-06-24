@@ -10,14 +10,13 @@ public class InterruptHandler {
     }
 
 	public boolean handle(CpuState cpuState) {
-		this.semaphore.acquireUninterruptibly();
 		Interrupt irpt = cpuState.getIrpt();
 
 		if (irpt == null) {
 			return false;
 		}
 
-		cpuState.setIrpt(null);
+		this.semaphore.acquireUninterruptibly();
 
 		switch (irpt) {
 			case BLOCK:
@@ -37,6 +36,7 @@ public class InterruptHandler {
 				break;
 		}
 
+		cpuState.setIrpt(null);
 		this.semaphore.release();
 		return true;
 	}

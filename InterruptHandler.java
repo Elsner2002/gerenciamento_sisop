@@ -1,29 +1,43 @@
+import java.util.concurrent.Semaphore;
+
 public class InterruptHandler {
     private ProcessManager processManager;
-	//lida com a interrupção passada se existir
+	private Semaphore semaphore;
+
     public InterruptHandler(ProcessManager processManager){
         this.processManager = processManager;
+		this.semaphore = new Semaphore(1, true);
     }
 
 	public boolean handle(CpuState cpuState) {
+		this.semaphore.acquireUninterruptibly();
 		Interrupt irpt = cpuState.getIrpt();
-		cpuState.setIrpt(null);
 
 		if (irpt == null) {
 			return false;
 		}
 
-		if (irpt == Interrupt.TIMEOUT) {
-			processManager.reschedule();
-			return true;
+		cpuState.setIrpt(null);
+
+		switch (irpt) {
+			case BLOCK:
+				this.processManager.reschedule(true);
+				break;
+			case UNBLOCK:
+				this.processManager.unblock();
+				break;
+			case TIMEOUT:
+				this.processManager.reschedule(false);
+				break;
+			case STOP:
+				this.processManager.killRunning();
+				break;
+			default:
+				System.out.println("error: " + cpuState.getIrpt());
+				break;
 		}
 
-		if (irpt == Interrupt.STOP) {
-			processManager.killRunning();
-			return true;
-		}
-
-		System.out.println("error: " + cpuState.getIrpt());
+		this.semaphore.release();
 		return true;
 	}
 }

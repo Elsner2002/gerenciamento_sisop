@@ -1,13 +1,41 @@
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Scanner;
-//lida com as chamadas de sistema de I/O que o programa solicita
-public class SyscallHandler {
-	private Memory memory;
 
-	public SyscallHandler(Memory memory) {
+public class SyscallHandler extends Thread {
+	private BlockingQueue<CpuState> queue;
+	private Memory memory;
+	private InterruptHandler interruptHandler;
+
+	public SyscallHandler(Memory memory, InterruptHandler interruptHandler) {
+		this.queue = new LinkedBlockingQueue<>();
 		this.memory = memory;
+		this.interruptHandler = interruptHandler;
 	}
 
-	public void handle(CpuState cpuState) {
+	@Override
+	public void run() {
+		while (true) {
+			try {
+				CpuState irptState = this.queue.take();
+				handle(irptState);
+				irptState.setIrpt(Interrupt.UNBLOCK);
+				interruptHandler.handle(irptState);
+			} catch (InterruptedException e) {
+				System.out.println(
+					"error: syscallhandler: interrupted while waiting"
+				);
+
+				return;
+			}
+		}
+	}
+
+	public void queueRequest(CpuState cpuState) {
+		this.queue.add(cpuState);
+	}
+
+	private void handle(CpuState cpuState) {
         if (cpuState.getReg(8) == 1) {
 			System.out.print("system: input: ");
             Scanner in = new Scanner(System.in);

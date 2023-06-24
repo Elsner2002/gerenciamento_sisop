@@ -1,9 +1,10 @@
-public class Cpu {
+public class Cpu extends Thread {
 	public static final int NUM_GENERAL_PURPOSE_REGS = 10;
 	public static final int MIN_INT = -32767;
 	public static final int MAX_INT = 32767;
 	public static final int QUANTUM = 10;
 	private CpuState state;
+	private CpuState nextState;
 	private Memory memory;
 	private boolean trace = false;
 	private InterruptHandler interruptHandler;
@@ -30,29 +31,48 @@ public class Cpu {
 		return frame_start + offset;
 	}
 
-	public CpuState getState() {
-		return this.state;
-	}
-
-	//executa o processo passado
-	public void run(CpuState newState) {
-		this.state = newState;
-
+	@Override
+	public void run() {
 		while (true) {
-			this.clk++;
-			fetch();
-			execute();
-
-			if (this.clk % Cpu.QUANTUM == 0) {
-				this.state.setIrpt(Interrupt.TIMEOUT);
+			if (this.nextState == null) {
+				continue;
 			}
 
-			if (interrupt()) {
-				break;
+			this.state = this.nextState;
+			this.nextState = null;
+
+			while (true) {
+				this.clk++;
+				fetch();
+				execute();
+
+				if (this.clk % Cpu.QUANTUM == 0) {
+					this.state.setIrpt(Interrupt.TIMEOUT);
+				}
+
+				if (handleInterruption()) {
+					break;
+				}
 			}
 		}
 	}
-	//verifica se a instrução do processo tem um endereço válido
+
+	public void runProcess(CpuState nextState) {
+		this.nextState = nextState;
+	}
+
+	public CpuState getCpuState() {
+		return this.state;
+	}
+
+	public boolean getTrace() {
+		return this.trace;
+	}
+
+	public void toggleTrace() {
+		this.trace = !this.trace;
+	}
+
 	private void fetch() {
 		if (!isLegalAddress(this.state.getPc())) {
 			return;
@@ -62,7 +82,7 @@ public class Cpu {
 			this.state, this.state.getPc()
 		)));
 	}
-	//executa a instrução
+
 	private void execute() {
 		Word ir = this.state.getIr();
 		int r1Value = -1;
@@ -270,7 +290,9 @@ public class Cpu {
 
 				break;
 			case TRAP:
-				this.syscallHandler.handle(this.state);
+				this.state.setIrpt(Interrupt.BLOCK);
+				handleInterruption();
+				this.syscallHandler.queueRequest(this.state);
 				break;
 			default:
 				this.state.setIrpt(Interrupt.INVALID_INSTRUCTION);
@@ -281,12 +303,11 @@ public class Cpu {
 			this.state.incPc();
 		}
 	}
-	//pega a interrupção (se ocorrer) para parar ou continuar o programa
-	private boolean interrupt() {
+
+	private boolean handleInterruption() {
 		return interruptHandler.handle(this.state);
 	}
 
-	//verifica se o valor da overflow
 	private boolean isOverflow(int v) {
 		if (v < Cpu.MIN_INT || v > Cpu.MAX_INT) {
 			this.state.setIrpt(Interrupt.OVERFLOW);
@@ -295,20 +316,8 @@ public class Cpu {
 
 		return false;
 	}
-	//verifica se o endereço é válido para a memória utilizada pelo programa
+
 	private boolean isLegalAddress(int addr) {
 		return true;
-	}
-
-	public boolean getTrace() {
-		return this.trace;
-	}
-	//troca o estado do trace (liga/desliga a impressão das instruções)
-	public void toggleTrace() {
-		this.trace = !this.trace;
-	}
-
-	private void setState(CpuState state) {
-		this.state = state;
 	}
 }

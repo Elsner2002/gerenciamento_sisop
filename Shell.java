@@ -4,41 +4,41 @@ public class Shell {
 	private static Cpu cpu;
 	private static Memory memory;
 	private static ProcessManager processManager;
+	private static ShellIO shellIO;
 
 	public static void main(String[] args) {
 		Shell.memory = new Memory();
-		MemoryManager memoryManager = new MemoryManager(memory);
+		MemoryManager memoryManager = new MemoryManager(Shell.memory);
 		NextCpuState nextCpuState = new NextCpuState();
 		SyscallQueue syscallQueue = new SyscallQueue();
+		Shell.shellIO = new ShellIO();
 
 		Shell.processManager = new ProcessManager(
 			memoryManager, nextCpuState
 		);
 
 		InterruptHandler interruptHandler = new InterruptHandler(
-			processManager
+			Shell.processManager
 		);
 
 		SyscallHandler syscallHandler = new SyscallHandler(
-			memory, interruptHandler, syscallQueue
+			Shell.memory, interruptHandler, syscallQueue, Shell.shellIO
 		);
 
 		Shell.cpu = new Cpu(
-			memory, interruptHandler, nextCpuState, syscallQueue
+			Shell.memory, interruptHandler, nextCpuState, syscallQueue
 		);
 
-		processManager.setCpu(cpu);
+		Shell.processManager.setCpu(Shell.cpu);
 		Shell.cpu.start();
 		syscallHandler.start();
 		prompt();
 	}
 
 	private static void prompt() {
-		Scanner in = new Scanner(System.in);
-
 		while (true) {
-			System.out.print("[dotti@pucrs]& ");
-			String[] input = in.nextLine().split(" ");
+			String[] input = Shell.shellIO.getInputLine("[dotti@pucrs]& ")
+				.split(" ");
 
 			switch(input[0]) {
 				case "new":
@@ -63,12 +63,11 @@ public class Shell {
 					Shell.trace();
 					break;
 				case "exit":
-					in.close();
 					return;
 				case "":
 					break;
 				default:
-					System.out.println(
+					Shell.shellIO.println(
 						"system: command not found: " + input[0]
 					);
 
@@ -79,11 +78,9 @@ public class Shell {
 
 	private static void new_(String name) {
 		try {
-			Shell.processManager.createProcess(
-				Programs.get(name)
-			);
+			Shell.processManager.createProcess(Programs.get(name));
 		} catch (Exception e) {
-			System.out.println("new: unknown program");
+			Shell.shellIO.println("new: unknown program");
 		}
 	}
 
@@ -91,19 +88,21 @@ public class Shell {
 		try {
 			Shell.processManager.killProcess(Integer.parseInt(pid));
 		} catch (NumberFormatException e) {
-			System.out.println("kill: pid must be a number");
+			Shell.shellIO.println("kill: pid must be a number");
 		}
 	}
 
 	private static void ps() {
-		System.out.println("id   state   name");
-		System.out.println("--   -----   ----");
+		Shell.shellIO.println(
+			"id   state   name\n" +
+			"--   -----   ----"
+		);
 
 		for(Process p : Shell.processManager.getProcesses()) {
 			int id = p.getPcb().getId();
 			ProcessState state = p.getPcb().getState();
 			String name = Programs.getName(p.getWords());
-			System.out.println(id + "   " + state + "   " + name);
+			Shell.shellIO.println(id + "   " + state + "   " + name);
 		}
 	}
 
@@ -113,25 +112,25 @@ public class Shell {
 				Integer.parseInt(pid)
 			);
 
-			System.out.println(process.getPcb());
+			Shell.shellIO.println(process.getPcb().toString());
 			listFramesProcess(process.getPcb().getCpuState().getFrames());
 		}catch (Exception e) {
-			System.out.println("pdump: invalid pid");
+			Shell.shellIO.println("pdump: invalid pid");
 		}
 	}
 	private static void listFramesProcess(int[] range){
 		try {
 			for (int r: range) {
-				System.out.println("frame " + r);
+				Shell.shellIO.println("frame " + r);
 
 				for (Word word: Shell.memory.getFrame(r)) {
-					System.out.println("    " + word);
+					Shell.shellIO.println("    " + word);
 				}
 			}
 		} catch (NumberFormatException e) {
-			System.out.println("pdump: invalid process range");
+			Shell.shellIO.println("pdump: invalid process range");
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("pdump: address out of bounds");
+			Shell.shellIO.println("pdump: address out of bounds");
 		}
 	}
 
@@ -141,17 +140,17 @@ public class Shell {
 			int end = Integer.parseInt(input[2]);
 
 			for (int i = start; i <= end; i++) {
-				System.out.println("frame " + i);
+				Shell.shellIO.println("frame " + i);
 
 				for (Word word: Shell.memory.getFrame(i)) {
-					System.out.println("    " + word);
+					Shell.shellIO.println("    " + word);
 				}
 			}
 		} catch (NumberFormatException e) {
-			System.out.println("mdump: invalid start and end addresses");
-			System.out.println("Usage: mdump <start> <end>");
+			Shell.shellIO.println("mdump: invalid start and end addresses");
+			Shell.shellIO.println("Usage: mdump <start> <end>");
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("mdump: address out of bounds");
+			Shell.shellIO.println("mdump: address out of bounds");
 		}
 	}
 

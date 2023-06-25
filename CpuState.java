@@ -5,7 +5,6 @@ public class CpuState {
 	private int[] registers;
 	private Interrupt irpt;
 	private int[] frames;
-	private boolean debugMode;
 
 	public CpuState(int[] frames) {
 		this.registers = new int[Cpu.NUM_GENERAL_PURPOSE_REGS];
@@ -61,13 +60,5 @@ public class CpuState {
 
 	public void setFrames(int[] frames) {
 		this.frames = frames;
-	}
-
-	public boolean isDebugMode() {
-		return debugMode;
-	}
-
-	public void setDebugMode(boolean debugMode) {
-		this.debugMode = debugMode;
 	}
 }

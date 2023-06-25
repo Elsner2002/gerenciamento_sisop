@@ -2,11 +2,22 @@ public class Cpu extends Thread {
 	public static final int NUM_GENERAL_PURPOSE_REGS = 10;
 	public static final int MIN_INT = -32767;
 	public static final int MAX_INT = 32767;
+	/**
+	 * CPU cycles before round-robin process scheduling kicks in and process
+	 * is sent to the back of the queue.
+	 */
 	public static final int QUANTUM = 10;
 	private CpuState state;
+	/**
+	 * Clock cycle count.
+	 */
 	private int clk;
-	private Memory memory;
+	/**
+	 * Whether to print every instruction computed and interruption handled.
+	 * For debugging only.
+	 */
 	private boolean trace = false;
+	private Memory memory;
 	private InterruptHandler interruptHandler;
 	private NextCpuState nextCpuState;
 	private SyscallQueue syscallQueue;
@@ -21,6 +32,13 @@ public class Cpu extends Thread {
 		this.syscallQueue = syscallQueue;
 	}
 
+	/**
+	 * Translates a virtual address into a physical one.
+	 *
+	 * @param cpuState the current CPU state, used to get frames in use
+	 * @param virtual_addr the virtual address to be translated
+	 * @return the translated phyiscal address
+	 */
 	public static int translateToPhysical(
 		CpuState cpuState, int virtual_addr
 	) {
@@ -34,7 +52,9 @@ public class Cpu extends Thread {
 
 	@Override
 	public void run() {
+		// The CPU never stops.
 		while (true) {
+			// Polls the process manager for next quantum of execution.
 			CpuState nextState = this.nextCpuState.get();
 
 			if (nextState == null) {
@@ -43,11 +63,14 @@ public class Cpu extends Thread {
 
 			this.state = nextState;
 
+			// Computes the given process until interrupted.
 			while (true) {
 				this.clk++;
 				fetch();
 				execute();
 
+				// Unless the current process was interrupted in this execution
+				// cycle, if quantum has ended, stop computing.
 				if (
 					this.state.getIrpt() == null &&
 					this.clk % Cpu.QUANTUM == 0
@@ -55,9 +78,18 @@ public class Cpu extends Thread {
 					this.state.setIrpt(Interrupt.TIMEOUT);
 				}
 
+				// Save current interruption information before this register
+				// is cleared by the interrupt handler, just in case it is
+				// needed after.
 				Interrupt irpt = this.state.getIrpt();
 
 				if (handleInterruption()) {
+					// Entering this block means an interruption was handled
+					// and it requires the CPU to stop computing the current
+					// process.
+					//
+					// If the current process requested a syscall, its request
+					// must be queued for the syscall handler to handle.
 					if (irpt == Interrupt.BLOCK) {
 						this.syscallQueue.add(this.state);
 					}
@@ -80,6 +112,9 @@ public class Cpu extends Thread {
 		this.trace = !this.trace;
 	}
 
+	/**
+	 * Fetches the next instruction.
+	 */
 	private void fetch() {
 		if (!isLegalAddress(this.state.getPc())) {
 			return;
@@ -90,6 +125,9 @@ public class Cpu extends Thread {
 		)));
 	}
 
+	/**
+	 * Executes the current instruction.
+	 */
 	private void execute() {
 		Word ir = this.state.getIr();
 		int r1Value = -1;
@@ -309,6 +347,11 @@ public class Cpu extends Thread {
 		}
 	}
 
+	/**
+	 * Attempt to handle an interruption.
+	 *
+	 * @return true if must stop computing the current process, else false
+	 */
 	private boolean handleInterruption() {
 		if (this.state.getIrpt() != null && this.trace) {
 			System.out.println(this.state.getIrpt());
@@ -317,6 +360,12 @@ public class Cpu extends Thread {
 		return interruptHandler.handle(this.state);
 	}
 
+	/**
+	 * Check if an integer is out of bounds.
+	 *
+	 * @param v the value to be checked
+	 * @return whether it is out of bounds or not
+	 */
 	private boolean isOverflow(int v) {
 		if (v < Cpu.MIN_INT || v > Cpu.MAX_INT) {
 			this.state.setIrpt(Interrupt.OVERFLOW);

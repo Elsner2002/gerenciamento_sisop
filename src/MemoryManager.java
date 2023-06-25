@@ -1,8 +1,11 @@
+/**
+ * Manages free and occupied memory.
+ */
 public class MemoryManager {
 	private Memory memory;
 	private int numOccupiedFrames;
 	private boolean[] occupiedFrames;
-	//cria o gerenciador de memória
+
 	public MemoryManager(Memory memory) {
 		this.memory = memory;
 		this.numOccupiedFrames = 0;
@@ -12,7 +15,14 @@ public class MemoryManager {
 	public int getNumOccupiedFrames() {
 		return numOccupiedFrames;
 	}
-	//coloca o conteudo do processo na memoria
+
+	/**
+	 * Fills a number of frames with a certain word amount.
+	 *
+	 * @param frames the frames to be filled
+	 * @param words the words which will fill such frames
+	 * @return wether the frames could be filled or not
+	 */
 	public boolean fillFrames(int[] frames, Word[] words) {
 		if (words.length > frames.length * Memory.FRAME_SIZE) {
 			return false;
@@ -50,7 +60,12 @@ public class MemoryManager {
 		return true;
 	}
 
-	//aloca espaço na memória
+	/**
+	 * Allocates a certain number of frames.
+	 *
+	 * @param framesNeeded how many frames are needed
+	 * @return the frames allocated, or null if none
+	 */
 	public int[] allocate(int framesNeeded) {
 		if (
 			framesNeeded > Memory.FRAME_AMOUNT - this.getNumOccupiedFrames()
@@ -76,7 +91,12 @@ public class MemoryManager {
 
 		return allocatedFrames;
 	}
-	//desaloca espaço na memória
+
+	/**
+	 * Desallocate the given frames.
+	 *
+	 * @param frames the frames to be desallocated.
+	 */
 	public void desallocate(int[] frames) {
 		for (int frame : frames) {
 			this.occupiedFrames[frame] = false;

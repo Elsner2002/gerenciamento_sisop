@@ -1,8 +1,11 @@
+/**
+ * Process Control Block.
+ */
 public class Pcb {
 	private int id;
 	private ProcessState state;
 	private CpuState cpuState;
-	//instancia o PCB de um programa
+
 	public Pcb(int id, int[] frames) {
 		this.id = id;
 		this.state = ProcessState.READY;

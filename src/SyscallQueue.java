@@ -1,6 +1,10 @@
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * Thread-safe syscall request queue
+ * for communication between CPU and syscall handler.
+ */
 public class SyscallQueue {
 	private BlockingQueue<CpuState> queue;
 

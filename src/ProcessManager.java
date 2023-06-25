@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
+/**
+ * Manages process lifetime and scheduling.
+ */
 public class ProcessManager {
 	private int nextId = 0;
 	private int runningId = -1;
@@ -30,6 +33,11 @@ public class ProcessManager {
 		this.run(this.runningId);
 	}
 
+	/**
+	 * Prompts the CPU to run a process.
+	 *
+	 * @param id the process id
+	 */
 	public void run(int id) {
 		if (this.cpu == null) {
 			throw new IllegalStateException("No reference to CPU");
@@ -41,6 +49,12 @@ public class ProcessManager {
 		this.nextCpuState.set(next.getPcb().getCpuState());
 	}
 
+	/**
+	 * Allocate a new process in memory.
+	 *
+	 * @param words the process data
+	 * @return the process id, or -1 if it could not be created.
+	 */
 	public int createProcess(Word[] words) {
 		int framesNeeded = (words.length / Memory.FRAME_SIZE) + 1;
 		int[] frames = this.memoryManager.allocate(framesNeeded);
@@ -63,6 +77,9 @@ public class ProcessManager {
 		return id;
 	}
 
+	/**
+	 * Reschedule process due to the end of current round-robin quantum.
+	 */
 	public void timeout() {
 		Process runningProcess = this.processes.get(this.runningId);
 		runningProcess.getPcb().setState(ProcessState.READY);
@@ -70,6 +87,9 @@ public class ProcessManager {
 		reschedule();
 	}
 
+	/**
+	 * Blocks the current process and reschedule.
+	 */
 	public void block() {
 		Process runningProcess = this.processes.get(this.runningId);
 		runningProcess.getPcb().setState(ProcessState.BLOCKED);
@@ -78,6 +98,9 @@ public class ProcessManager {
 		reschedule();
 	}
 
+	/**
+	 * Unblocks the process which is blocked for the longest time.
+	 */
 	public void unblock() {
 		try {
 			int blockedId = this.blockedIdQueue.remove();
@@ -86,6 +109,8 @@ public class ProcessManager {
 				ProcessState.READY
 			);
 
+			// If no process was running, reschedule (which will result in
+			// this process being run).
 			if (this.runningId == -1) {
 				this.reschedule();
 			}
@@ -94,6 +119,9 @@ public class ProcessManager {
 		}
 	}
 
+	/**
+	 * Choose which process will be the next to run.
+	 */
 	private void reschedule() {
 		int nextIdToRun = -1;
 
@@ -108,6 +136,9 @@ public class ProcessManager {
 			Process nextProcess = this.processes.get(nextIdToRun);
 			ProcessState nextProcessState = nextProcess.getPcb().getState();
 
+			// If looped through the entire queue (returned to the running
+			// process) and the running process is blocked, then no process
+			// can be run.
 			if (
 				nextIdToRun == this.runningId &&
 				nextProcessState == ProcessState.BLOCKED
@@ -116,6 +147,7 @@ public class ProcessManager {
 				return;
 			}
 
+			// Run this process.
 			if (nextProcessState == ProcessState.READY) {
 				break;
 			}
@@ -124,9 +156,16 @@ public class ProcessManager {
 		this.run(nextIdToRun);
 	}
 
+	/**
+	 * Kill the running process and reschedule,
+	 * unless there are no more processes.
+	 */
 	public void killRunning() {
 		this.killProcess(this.runningId);
 
+		// If there are more processes, mark one of them as running.
+		// This does not run the process, and is done only to identify
+		// the start of the queue when later rescheduling.
 		try {
 			this.runningId = this.idQueue.peek();
 		} catch (NullPointerException e) {
@@ -137,6 +176,11 @@ public class ProcessManager {
 		this.reschedule();
 	}
 
+	/**
+	 * Remove a process from memory.
+	 *
+	 * @param pid the process id
+	 */
 	public void killProcess(int pid) {
 		if (pid == this.runningId) {
 			this.runningId = -1;

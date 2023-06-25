@@ -1,5 +1,7 @@
+/**
+ * Natural unit of data for this CPU architecture.
+ */
 public record Word(
-	//cria uma palavra e guarda as suas informações
 	Opcode opcode,
 	int r1,
 	int r2,

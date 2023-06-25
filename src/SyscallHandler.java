@@ -20,8 +20,11 @@ public class SyscallHandler extends Thread {
 	public void run() {
 		while (true) {
 			try {
+				// Wait for a sysall request, then handle it.
 				CpuState irptState = this.syscallQueue.take();
 				handle(irptState);
+				// After handling the request, trigger an interruption to
+				// unblock it.
 				irptState.setIrpt(Interrupt.UNBLOCK);
 				interruptHandler.handle(irptState);
 			} catch (InterruptedException e) {

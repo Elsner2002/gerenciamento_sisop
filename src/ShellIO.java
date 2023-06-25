@@ -1,6 +1,9 @@
 import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
+/**
+ * Synchronization object for writing and reading to/from shell.
+ */
 public class ShellIO {
 	private Scanner in;
 	private Semaphore semaphore;

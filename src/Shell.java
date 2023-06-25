@@ -1,5 +1,9 @@
 import java.util.Scanner;
 
+/**
+ * Interactive shell for creating, stopping and running programs, inspecting
+ * process and memory info, etc.
+ */
 public class Shell {
 	private static Cpu cpu;
 	private static Memory memory;
@@ -30,11 +34,16 @@ public class Shell {
 		);
 
 		Shell.processManager.setCpu(Shell.cpu);
+		// Start the CPU thread.
 		Shell.cpu.start();
+		// Start the syscall handler thread.
 		syscallHandler.start();
 		prompt();
 	}
 
+	/**
+	 * Prompt user for input and process command.
+	 */
 	private static void prompt() {
 		while (true) {
 			String[] input = Shell.shellIO.getInputLine("[dotti@pucrs]& ")
@@ -76,6 +85,11 @@ public class Shell {
 		}
 	}
 
+	/**
+	 * Starts (but does not run) a program.
+	 *
+	 * @param name the name of the program
+	 */
 	private static void new_(String name) {
 		try {
 			Shell.processManager.createProcess(Programs.get(name));
@@ -84,6 +98,11 @@ public class Shell {
 		}
 	}
 
+	/**
+	 * Kills a process.
+	 *
+	 * @param pid the process id
+	 */
 	private static void kill(String pid) {
 		try {
 			Shell.processManager.killProcess(Integer.parseInt(pid));
@@ -92,6 +111,9 @@ public class Shell {
 		}
 	}
 
+	/**
+	 * Lists every process in memory.
+	 */
 	private static void ps() {
 		Shell.shellIO.println(
 			"id   state   name\n" +
@@ -106,6 +128,11 @@ public class Shell {
 		}
 	}
 
+	/**
+	 * Lists information about a process.
+	 *
+	 * @param pid the process id
+	 */
 	private static void pdump(String pid) {
 		try {
 			Process process = Shell.processManager.getProcess(
@@ -118,6 +145,12 @@ public class Shell {
 			Shell.shellIO.println("pdump: invalid pid");
 		}
 	}
+
+	/**
+	 * Lists data inside frames owned by a process.
+	 *
+	 * @param range the frame range
+	 */
 	private static void listFramesProcess(int[] range){
 		try {
 			for (int r: range) {
@@ -134,6 +167,11 @@ public class Shell {
 		}
 	}
 
+	/**
+	 * Dumps memory info from frames a to b.
+	 *
+	 * @param input the user input
+	 */
 	private static void mdump(String[] input) {
 		try {
 			int start = Integer.parseInt(input[1]);
@@ -154,10 +192,16 @@ public class Shell {
 		}
 	}
 
+	/**
+	 * Starts to run all processes in memory.
+	 */
 	private static void runAll() {
 		Shell.processManager.runAll();
 	}
 
+	/**
+	 * Toggle CPU trace.
+	 */
 	private static void trace() {
 		Shell.cpu.toggleTrace();
 	}

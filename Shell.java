@@ -1,17 +1,17 @@
 import java.util.Scanner;
 
-public class OperatingSystem {
+public class Shell {
 	private static Cpu cpu;
 	private static Memory memory;
 	private static ProcessManager processManager;
 
 	public static void main(String[] args) {
-		OperatingSystem.memory = new Memory();
+		Shell.memory = new Memory();
 		MemoryManager memoryManager = new MemoryManager(memory);
 		NextCpuState nextCpuState = new NextCpuState();
 		SyscallQueue syscallQueue = new SyscallQueue();
 
-		OperatingSystem.processManager = new ProcessManager(
+		Shell.processManager = new ProcessManager(
 			memoryManager, nextCpuState
 		);
 
@@ -23,12 +23,12 @@ public class OperatingSystem {
 			memory, interruptHandler, syscallQueue
 		);
 
-		OperatingSystem.cpu = new Cpu(
+		Shell.cpu = new Cpu(
 			memory, interruptHandler, nextCpuState, syscallQueue
 		);
 
 		processManager.setCpu(cpu);
-		OperatingSystem.cpu.start();
+		Shell.cpu.start();
 		syscallHandler.start();
 		prompt();
 	}
@@ -42,25 +42,25 @@ public class OperatingSystem {
 
 			switch(input[0]) {
 				case "new":
-					OperatingSystem.new_(input[1]);
+					Shell.new_(input[1]);
 					break;
 				case "kill":
-					OperatingSystem.kill(input[1]);
+					Shell.kill(input[1]);
 					break;
 				case "ps":
-					OperatingSystem.ps();
+					Shell.ps();
 					break;
 				case "pdump":
-					OperatingSystem.pdump(input[1]);
+					Shell.pdump(input[1]);
 					break;
 				case "mdump":
-					OperatingSystem.mdump(input);
+					Shell.mdump(input);
 					break;
 				case "runall":
-					OperatingSystem.runAll();
+					Shell.runAll();
 					break;
 				case "trace":
-					OperatingSystem.trace();
+					Shell.trace();
 					break;
 				case "exit":
 					in.close();
@@ -79,7 +79,7 @@ public class OperatingSystem {
 
 	private static void new_(String name) {
 		try {
-			OperatingSystem.processManager.createProcess(
+			Shell.processManager.createProcess(
 				Programs.get(name)
 			);
 		} catch (Exception e) {
@@ -89,7 +89,7 @@ public class OperatingSystem {
 
 	private static void kill(String pid) {
 		try {
-			OperatingSystem.processManager.killProcess(Integer.parseInt(pid));
+			Shell.processManager.killProcess(Integer.parseInt(pid));
 		} catch (NumberFormatException e) {
 			System.out.println("kill: pid must be a number");
 		}
@@ -99,7 +99,7 @@ public class OperatingSystem {
 		System.out.println("id   state   name");
 		System.out.println("--   -----   ----");
 
-		for(Process p : OperatingSystem.processManager.getProcesses()) {
+		for(Process p : Shell.processManager.getProcesses()) {
 			int id = p.getPcb().getId();
 			ProcessState state = p.getPcb().getState();
 			String name = Programs.getName(p.getWords());
@@ -109,7 +109,7 @@ public class OperatingSystem {
 
 	private static void pdump(String pid) {
 		try {
-			Process process = OperatingSystem.processManager.getProcess(
+			Process process = Shell.processManager.getProcess(
 				Integer.parseInt(pid)
 			);
 
@@ -124,7 +124,7 @@ public class OperatingSystem {
 			for (int r: range) {
 				System.out.println("frame " + r);
 
-				for (Word word: OperatingSystem.memory.getFrame(r)) {
+				for (Word word: Shell.memory.getFrame(r)) {
 					System.out.println("    " + word);
 				}
 			}
@@ -143,7 +143,7 @@ public class OperatingSystem {
 			for (int i = start; i <= end; i++) {
 				System.out.println("frame " + i);
 
-				for (Word word: OperatingSystem.memory.getFrame(i)) {
+				for (Word word: Shell.memory.getFrame(i)) {
 					System.out.println("    " + word);
 				}
 			}
@@ -156,11 +156,11 @@ public class OperatingSystem {
 	}
 
 	private static void runAll() {
-		OperatingSystem.processManager.runAll();
+		Shell.processManager.runAll();
 	}
 
 	private static void trace() {
-		OperatingSystem.cpu.toggleTrace();
+		Shell.cpu.toggleTrace();
 	}
 }
 

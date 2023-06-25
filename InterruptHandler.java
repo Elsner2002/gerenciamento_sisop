@@ -20,13 +20,13 @@ public class InterruptHandler {
 
 		switch (irpt) {
 			case BLOCK:
-				this.processManager.reschedule(true);
+				this.processManager.block();
 				break;
 			case UNBLOCK:
 				this.processManager.unblock();
 				break;
 			case TIMEOUT:
-				this.processManager.reschedule(false);
+				this.processManager.timeout();
 				break;
 			case STOP:
 				this.processManager.killRunning();

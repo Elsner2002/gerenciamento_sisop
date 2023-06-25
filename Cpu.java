@@ -55,7 +55,13 @@ public class Cpu extends Thread {
 					this.state.setIrpt(Interrupt.TIMEOUT);
 				}
 
+				Interrupt irpt = this.state.getIrpt();
+
 				if (handleInterruption()) {
+					if (irpt == Interrupt.BLOCK) {
+						this.syscallQueue.add(this.state);
+					}
+
 					break;
 				}
 			}
@@ -98,7 +104,7 @@ public class Cpu extends Thread {
 			r2Value = this.state.getReg(ir.r2());
 		}
 
-		if (trace) {
+		if (this.trace) {
 			System.out.println(ir);
 		}
 
@@ -292,8 +298,6 @@ public class Cpu extends Thread {
 				break;
 			case TRAP:
 				this.state.setIrpt(Interrupt.BLOCK);
-				handleInterruption();
-				this.syscallQueue.add(this.state);
 				break;
 			default:
 				this.state.setIrpt(Interrupt.INVALID_INSTRUCTION);
@@ -306,8 +310,8 @@ public class Cpu extends Thread {
 	}
 
 	private boolean handleInterruption() {
-		if (this.state.getIrpt() != null) {
-			System.out.println("IRPT:" + this.state.getIrpt());
+		if (this.state.getIrpt() != null && this.trace) {
+			System.out.println(this.state.getIrpt());
 		}
 
 		return interruptHandler.handle(this.state);

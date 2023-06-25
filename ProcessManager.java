@@ -11,6 +11,7 @@ public class ProcessManager {
 	private MemoryManager memoryManager;
 	private Map<Integer, Process> processes;
 	private Queue<Integer> idQueue;
+	private Queue<Integer> blockedIdQueue;
 	private NextCpuState nextCpuState;
 
 	public ProcessManager(
@@ -19,6 +20,7 @@ public class ProcessManager {
 		this.memoryManager = memoryManager;
 		this.processes = new HashMap<>();
 		this.idQueue = new LinkedList<>();
+		this.blockedIdQueue = new LinkedList<>();
 		this.nextCpuState = nextCpuState;
 	}
 
@@ -61,38 +63,38 @@ public class ProcessManager {
 		return id;
 	}
 
+	public void timeout() {
+		Process runningProcess = this.processes.get(this.runningId);
+		runningProcess.getPcb().setState(ProcessState.READY);
+		runningProcess.getPcb().setCpuState(this.cpu.getCpuState());
+		reschedule();
+	}
+
+	public void block() {
+		Process runningProcess = this.processes.get(this.runningId);
+		runningProcess.getPcb().setState(ProcessState.BLOCKED);
+		runningProcess.getPcb().setCpuState(this.cpu.getCpuState());
+		this.blockedIdQueue.add(this.runningId);
+		reschedule();
+	}
+
 	public void unblock() {
-		int highestBlockedId = -1;
+		try {
+			int blockedId = this.blockedIdQueue.remove();
 
-		for (int id : this.idQueue) {
-			Process process = this.processes.get(id);
+			this.processes.get(blockedId).getPcb().setState(
+				ProcessState.READY
+			);
 
-			if (
-				id > highestBlockedId &&
-				process != null &&
-				process.getPcb().getState() == ProcessState.BLOCKED
-			) {
-				highestBlockedId = id;
+			if (this.runningId == -1) {
+				this.reschedule();
 			}
-		}
-
-		if (highestBlockedId != -1) {
-			this.processes.get(highestBlockedId).getPcb()
-				.setState(ProcessState.READY);
+		} catch (NoSuchElementException e) {
+			return;
 		}
 	}
 
-	public void reschedule(boolean runningWasBlocked) {
-		Process runningProcess = this.processes.get(this.runningId);
-
-		if (runningProcess != null) {
-			ProcessState newState = runningWasBlocked ?
-				ProcessState.BLOCKED : ProcessState.READY;
-
-			runningProcess.getPcb().setState(newState);
-			runningProcess.getPcb().setCpuState(this.cpu.getCpuState());
-		}
-
+	private void reschedule() {
 		int nextIdToRun = -1;
 
 		while (true) {
@@ -102,15 +104,19 @@ public class ProcessManager {
 				return;
 			}
 
-			Process nextP = this.processes.get(nextIdToRun);
+			this.idQueue.add(nextIdToRun);
+			Process nextProcess = this.processes.get(nextIdToRun);
+			ProcessState nextProcessState = nextProcess.getPcb().getState();
 
-			if (nextP == null) {
-				continue;
+			if (
+				nextIdToRun == this.runningId &&
+				nextProcessState == ProcessState.BLOCKED
+			) {
+				this.runningId = -1;
+				return;
 			}
 
-			this.idQueue.add(nextIdToRun);
-
-			if (nextP.getPcb().getState() == ProcessState.READY) {
+			if (nextProcessState == ProcessState.READY) {
 				break;
 			}
 		}
@@ -120,7 +126,15 @@ public class ProcessManager {
 
 	public void killRunning() {
 		this.killProcess(this.runningId);
-		this.reschedule(false);
+
+		try {
+			this.runningId = this.idQueue.peek();
+		} catch (NullPointerException e) {
+			this.runningId = -1;
+			return;
+		}
+
+		this.reschedule();
 	}
 
 	public void killProcess(int pid) {
@@ -134,6 +148,7 @@ public class ProcessManager {
 			process.getPcb().getCpuState().getFrames()
 		);
 
+		this.idQueue.remove(pid);
 		this.processes.remove(pid);
 	}
 

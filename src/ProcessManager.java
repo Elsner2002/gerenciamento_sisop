@@ -80,9 +80,12 @@ public class ProcessManager {
 	 * Reschedule process due to the end of current round-robin quantum.
 	 */
 	public void timeout() {
-		Process runningProcess = this.processes.get(this.runningId);
-		runningProcess.getPcb().setState(ProcessState.READY);
-		runningProcess.getPcb().setCpuState(this.cpu.getCpuState());
+		if (this.runningId != -1) {
+			Process runningProcess = this.processes.get(this.runningId);
+			runningProcess.getPcb().setState(ProcessState.READY);
+			runningProcess.getPcb().setCpuState(this.cpu.getCpuState());
+		}
+
 		reschedule();
 	}
 

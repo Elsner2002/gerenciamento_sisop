@@ -54,28 +54,18 @@ Comandos:
 - “exit” equivale ao comando “exit”
 
 Ordem dos comandos para execução de teste:
+- slow
 - new fac
-- new factrap
-- ps
-- pdump 1
-- runall
-- mdump 3 4
-- ps
+- new factrap 
+- mdump 0 2
 - new fib
 - new fibtrap
 - ps
-- pdump 3
-- runall
-- ps
 - 10
-- mdump 8 10
+- mdump 6 7a
 - new factrap
 - new fibtrap
-- pdump 4
-- pdump 5
-- runall
 - ps 
 - 11
-- mdump 1 2
-- mdump 7 8
+- mdump 0 7
 - Ctrl + C

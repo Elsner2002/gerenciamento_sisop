@@ -2,27 +2,33 @@ Bernardo Barzoto Zomer, Felipe Elsner da Silva, Lucas Marchesan Cunha
 
 Seção implementação:
 
-1.1 CPU:
-- Nossa CPU é dividida em duas classes, o Cpu e o CpuState. A Cpu armazena as instruções e é responsável por executá-las (podendo ou não imprimir essa execução com base se o trace esta ativado ou não), assim como garantir que seu funcionamento ocorra sem problemas (checando por interrupções de erro durante a execução e pela interrupção que sinaliza o fim do programa). Já o CpuState guarda os seus registradores, incluindo o pc, o IR e os 10 registradores que ela usa.
+T2a:
+Para implementar a perda do processador por tempo de uso, usamos um sistema round-robin, onde, 
+após executar por um determinado número de ciclos, o processo libera o processador para que outro 
+possa usá-lo e assim por diante.
+Para isso, foi implementado um sistema de quantum na CPU e o processo run foi atualizado, de forma 
+que ele impede o processo de rodar caso ele tenha completado seu ciclo de quantum. Nesse caso, ele 
+ativa a interrupção de Timeout, que por sua vez marca o programa mais uma vez como pronto e o 
+insere novamente na fila. Dessa forma, ao terminar de executar um processo por falta de tempo, ele 
+retorna ao final da fila de execução conforme o próximo processo da fila é chamado e assim por 
+diante, até que ele chegue ao final de sua execução, demarcada pelo instrução STOP, que ao ser 
+executado mata o processo.
 
-1.2 Memória:
-- A Memória está implementada na classe Memory, armazenando tanto os tamanhos da memória quanto dos frames, além da memória em si, uma matriz que possui como medidas o tamanho da memória/tamanho dos frames e o tamanho dos frames. Assim, já temos a memória salva como suas partições de frames, que serão usados para armazenar os processos usando o método de paginação.
-
-2.0 Programas:
-- Os programas estão armazenados na classe Programs, que possui tanto os programas em si quanto um Map, que liga eles a uma palavra que sera usada para chamar o programa “nome do programa”.
-
-3.0 Interrupções:
-- Interrupções são definidas na classe Interrupts e tratadas na classe InterruptHandler, que é responsável por lidar com essas mensagens conforme elas aparecem. As checagem de interrupções em si estão espalhadas pelo código onde elas podem ocorrer, principalmente nas instruções da CPU, onde cada instrução é testada para ver se alguma das interrupções que ela pode causar é ativada.
-
-4.0 Chamadas de sistema:
-- A chamada de sistema foi implementada na classe SyscallHandler, que implementa a função TRAP. Nela, o registrador 8 define a natureza da operação, onde quando ele for 1 o sistema deve realizar uma leitura e armazenar esse valor no registrador apontado pelo registrador 9. Caso o registrador 8 for 2, ele realiza uma impressão do valor armazenado no registrador apontado pelo registrador 9.
-
-5.0 Gerente de Memoria:
-- O gerente de memória foi implementado na classe MemoryManager, onde é armazenada uma copia da memória, o número de frames ocupados é um vetor do tamanho da memória que, para cada frame da memória, diz se ele esta ocupado ou não. A partir desses elementos, o programa sabe quantos e quais frames a memória tem disponível e, a partir disso, consegue alocar e desalocar propriamente para cada processo que entra ou sai dela, caso ela tenha espaço suficiente disponível no caso de uma inserção. A conversão do endereço fisico pro lógico é  realizado na CPU, no método translateToPhysical e a tabela de páginas é armazenada no PCB de cada processo, no vetor frames que representa os frames ocupados por cada processo.
-
-6.0 Gerente de Processos:
-- O gerenciamento de processos é realizado por duas classes, o ProcessManager e o PCB. O PCB armazena os dados que referem ao código e sua execução, incluindo o seu id, seu pc, seu estado e a sua tabela de paginas. Já o ProcessManager é responsável pela criação e eliminação de processos, fazendo uso de MemoryManager para liberar os frames que um processo ocupa ou alocar frames para um processo ocupar dentre os disponíveis na memória.
-
+T2b:
+Para implementar concorrência no sistema o código foi reorganizado para fazer uso de múltiplas 
+threads em sua execução. Essas threads foram criadas usando a biblioteca padrão do Java, a qual 
+sobrescreve o processo “run” de um programa para opera-lo como uma thread. Com isso, foram criadas 3 
+threads que rodam constantemente, cada uma com sua utilidade específica no código.
+A primeira delas, a thread, Shell, é responsável por ler os inputs do usuário, ou seja, ler os 
+comandos relacionados a criação e execução de processos, além de comandos relacionados a memória. A 
+segunda thread, CPU, é responsável por executar os programas fornecidos. Por fim, a terceira thread, 
+Interrupt Handler, é responsável por lidar com todos os comandos de I/O, que previamente eram executados 
+na CPU.
+Para isso, uma vez que a CPU lê uma instrução de I/O, esse processo entra no estado de bloqueado e não 
+é mais executado pela CPU. Em vez disso, ele entra em uma fila de processos a serem tratados pela thread 
+Interrupt Handler, a qual irá executar o processo de I/O, fazendo com que ele não atrase a execução da 
+CPU. Por fim, quando o I/O for tratado, o estado do processo é alterado novamente para ready e ele volta 
+para a final de programas a serem executados pela CPU.
 
 Seção de testes:
 
@@ -43,11 +49,33 @@ Comandos:
 - “pdump <id>” equivale ao comando “dump <id>”
 - “kill <id>” equivale ao comando “desloca <id>”
 - “mdump <inicio,fim>” equivale ao comando “dumpM <inicio,fim>”
-- “run <id>” equivale ao comando “executa <id>”
+- “runall” executa todos os programas que estão na lista de prontos para executar
 - “trace” equivale aos comandos “traceOn e traceOff”, invertendo o valor atual da variável trace
 - “exit” equivale ao comando “exit”
 
-Notas:
-- O programa "pc" não executa corretamente
-- O código não testa se um endereço de memória é válido antes de fazer o endereçamento; ele sempre assume que o endereço é valido
-- Os programas fornecidos foram alterados pois continham bugs; nomeadamente, instruções que tentam acessar endereços de memória não alocados
+Ordem dos comandos para execução de teste:
+- new fac
+- new factrap
+- ps
+- pdump 1
+- runall
+- mdump 3 4
+- ps
+- new fib
+- new fibtrap
+- ps
+- pdump 3
+- runall
+- ps
+- 10
+- mdump 8 10
+- new factrap
+- new fibtrap
+- pdump 4
+- pdump 5
+- runall
+- ps 
+- 11
+- mdump 1 2
+- mdump 7 8
+- Ctrl + C

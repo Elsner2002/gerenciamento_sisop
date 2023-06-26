@@ -62,7 +62,7 @@ Ordem dos comandos para execução de teste:
 - new fibtrap
 - ps
 - 10
-- mdump 6 7a
+- mdump 6 7
 - new factrap
 - new fibtrap
 - ps 

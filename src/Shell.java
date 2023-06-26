@@ -39,6 +39,7 @@ public class Shell {
 		// Start the syscall handler thread.
 		syscallHandler.start();
 		prompt();
+		System.exit(0);
 	}
 
 	/**

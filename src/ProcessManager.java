@@ -27,12 +27,6 @@ public class ProcessManager {
 		this.nextCpuState = nextCpuState;
 	}
 
-	public void runAll() {
-		this.runningId = this.idQueue.remove();
-		this.idQueue.add(this.runningId);
-		this.run(this.runningId);
-	}
-
 	/**
 	 * Prompts the CPU to run a process.
 	 *
@@ -74,6 +68,11 @@ public class ProcessManager {
 		int id = pcb.getId();
 		this.processes.put(id, process);
 		this.idQueue.add(id);
+
+		if (this.runningId == -1) {
+			this.run(id);
+		}
+
 		return id;
 	}
 

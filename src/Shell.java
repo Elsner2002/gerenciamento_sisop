@@ -65,11 +65,11 @@ public class Shell {
 				case "mdump":
 					Shell.mdump(input);
 					break;
-				case "runall":
-					Shell.runAll();
-					break;
 				case "trace":
 					Shell.trace();
+					break;
+				case "slow":
+					Shell.slow();
 					break;
 				case "exit":
 					return;
@@ -193,17 +193,17 @@ public class Shell {
 	}
 
 	/**
-	 * Starts to run all processes in memory.
+	 * Toggle CPU trace.
 	 */
-	private static void runAll() {
-		Shell.processManager.runAll();
+	private static void trace() {
+		Shell.cpu.toggleTrace();
 	}
 
 	/**
 	 * Toggle CPU trace.
 	 */
-	private static void trace() {
-		Shell.cpu.toggleTrace();
+	private static void slow() {
+		Shell.cpu.toggleSlow();
 	}
 }
 

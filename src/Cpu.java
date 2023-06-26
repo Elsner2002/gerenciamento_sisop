@@ -1,7 +1,7 @@
 public class Cpu extends Thread {
 	public static final int NUM_GENERAL_PURPOSE_REGS = 10;
 	public static final int MIN_INT = -32767;
-	public static final int MAX_INT = 32767;
+	public static final int MAX_INT = Integer.MAX_VALUE;
 	/**
 	 * CPU cycles before round-robin process scheduling kicks in and process
 	 * is sent to the back of the queue.
@@ -17,6 +17,11 @@ public class Cpu extends Thread {
 	 * For debugging only.
 	 */
 	private boolean trace = false;
+	/**
+	 * Whether to wait one second between CPU cycles.
+	 * For debugging only.
+	 */
+	private boolean slow = false;
 	private Memory memory;
 	private InterruptHandler interruptHandler;
 	private NextCpuState nextCpuState;
@@ -54,6 +59,14 @@ public class Cpu extends Thread {
 	public void run() {
 		// The CPU never stops.
 		while (true) {
+			if (this.slow) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					System.out.println("error: interrupted while sleeping");
+				}
+			}
+
 			// Polls the process manager for next quantum of execution.
 			CpuState nextState = this.nextCpuState.get();
 
@@ -110,6 +123,10 @@ public class Cpu extends Thread {
 
 	public void toggleTrace() {
 		this.trace = !this.trace;
+	}
+
+	public void toggleSlow() {
+		this.slow = !this.slow;
 	}
 
 	/**
